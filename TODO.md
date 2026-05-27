@@ -329,7 +329,8 @@
 > **Goal:** Provide CLI commands for running analysis outside OpenCode.
 
 ### 7.1 CLI Entry Point
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/cli.py` with argparse subcommands: `analyze`, `audit`, `score`, `history`, `migrate`. Supports `--config-path`, `--format` (json/markdown/table), `--verbose`, `--fix`, `--detailed`, `--diff`, `--limit`, `--db-path` flags. Auto-detects config from `.opencode/` or `~/.config/opencode/`. Table formatter for terminal-friendly output. History command integrates with AnalysisHistoryStore. Entry point registered in `pyproject.toml` as `devkit`. 29 unit tests pass.
 - **Dependencies:** 4.1
 - **Tasks:**
   - Create CLI with `argparse` or `click`
@@ -342,7 +343,10 @@
   - `--help` shows all commands and options
 
 ### 7.2 Report Generator
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/output/report_generator.py` — generates formatted reports in JSON, Markdown, and HTML formats. Supports summary, findings by severity, recommendations, score trends, and raw data sections. Saves to `output/` directory with timestamped filenames. Custom prefix support. HTML output includes styled tables and score badges. 13 unit tests pass.
+
+**Phase 7 Complete:** CLI & User Interface implemented with 42 total tests passing.
 - **Dependencies:** 7.1
 - **Tasks:**
   - Create `output/report_generator.py` — generate formatted reports
