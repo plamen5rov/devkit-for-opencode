@@ -174,7 +174,10 @@
   - Produces human-readable audit report
 
 ### 3.3 Optimization Advisor Agent
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/agents/optimization_advisor.py` with CrewAI advisor agent, optimization analysis for permissions (bash tightening, catch-all, denied tools), agents (model overrides, temperature, disabled cleanup), MCP (token cost reduction, disabled server removal), skills (deny review, duplicate resolution), and models (small_model config, high-cost model pairing). Prioritized recommendations (1-5) with before/after comparisons. 16 unit tests pass.
+
+**Phase 3 Complete:** All 3 core agents implemented with 43 total tests passing.
 - **Dependencies:** 3.1
 - **Tasks:**
   - Create `agents/optimization_advisor.py` — suggests improvements
