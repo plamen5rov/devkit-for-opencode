@@ -109,7 +109,8 @@
   - Tests cover valid, invalid, and missing skill scenarios
 
 ### 2.5 MCP Server Analyzer Tool
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tools/mcp_analyzer.py` with MCP server parsing (local/remote), OAuth detection, token cost estimation, hardcoded secret detection, duplicate command warnings, and high token cost alerts. 16 unit tests pass.
 - **Dependencies:** 2.1
 - **Tasks:**
   - Create `tools/mcp_analyzer.py` — analyzes MCP server configurations
