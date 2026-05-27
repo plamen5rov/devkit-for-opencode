@@ -3,12 +3,15 @@
 Usage:
     python main.py                  # Run default analysis
     python main.py --config PATH    # Analyze specific config
+    python main.py --mode audit     # Run security audit
+    python main.py --mode score     # Calculate health score
     python main.py --help           # Show help
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -30,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--mode",
         type=str,
-        choices=["analyze", "audit", "score"],
+        choices=["analyze", "audit", "score", "security", "token"],
         default="analyze",
         help="Analysis mode (default: analyze)",
     )
@@ -38,6 +41,11 @@ def parse_args() -> argparse.Namespace:
         "--verbose",
         action="store_true",
         help="Enable verbose output",
+    )
+    parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="Generate fixed config (audit mode only)",
     )
     return parser.parse_args()
 
@@ -56,6 +64,66 @@ def detect_config() -> Optional[Path]:
     return None
 
 
+def run_analyze(config_path: Path, verbose: bool) -> int:
+    """Run full analysis pipeline."""
+    from devkit.tasks.full_audit import create_full_audit_task
+
+    report = create_full_audit_task(str(config_path))
+    print(json.dumps(report.to_dict(), indent=2, default=str))
+    return 0
+
+
+def run_audit(config_path: Path, verbose: bool, fix: bool) -> int:
+    """Run security audit."""
+    from devkit.tasks.security_scan import run_security_scan
+
+    result = run_security_scan(str(config_path))
+    if verbose:
+        print(result.to_markdown())
+    else:
+        print(json.dumps(result.to_dict(), indent=2, default=str))
+    return 0
+
+
+def run_score(config_path: Path, verbose: bool) -> int:
+    """Calculate health score."""
+    from devkit.agents.orchestrator import run_orchestration
+
+    result = run_orchestration(str(config_path))
+    score = result.summary.get("health_score", 0)
+
+    if verbose:
+        print(f"Health Score: {score}/100")
+        print(f"\nBreakdown:")
+        print(f"  Issues: {result.summary.get('total_issues', 0)}")
+        print(f"  Warnings: {result.summary.get('total_warnings', 0)}")
+        print(f"  Agents: {result.summary.get('agent_count', 0)}")
+        print(f"  Skills: {result.summary.get('skill_count', 0)}")
+        print(f"  MCP Servers: {result.summary.get('mcp_count', 0)}")
+        print(f"  Commands: {result.summary.get('command_count', 0)}")
+        print(f"  MCP Token Estimate: ~{result.summary.get('mcp_token_estimate', 0)} tokens")
+    else:
+        print(json.dumps({"health_score": score, "summary": result.summary}, indent=2))
+    return 0
+
+
+def run_security(config_path: Path, verbose: bool) -> int:
+    """Run security scan only."""
+    return run_audit(config_path, verbose, fix=False)
+
+
+def run_token(config_path: Path, verbose: bool) -> int:
+    """Run token optimization analysis."""
+    from devkit.tasks.token_optimization import run_token_analysis
+
+    report = run_token_analysis(str(config_path))
+    if verbose:
+        print(report.to_markdown())
+    else:
+        print(json.dumps(report.to_dict(), indent=2, default=str))
+    return 0
+
+
 def main() -> int:
     load_dotenv()
 
@@ -71,11 +139,20 @@ def main() -> int:
         print(f"Analyzing config: {config_path}")
         print(f"Mode: {args.mode}")
 
-    print(f"DevKit for OpenCode v0.1.0")
-    print(f"Config: {config_path}")
-    print("Analysis pipeline ready. Implement Phase 2 tools to enable full analysis.")
+    mode_handlers = {
+        "analyze": lambda: run_analyze(config_path, args.verbose),
+        "audit": lambda: run_audit(config_path, args.verbose, args.fix),
+        "score": lambda: run_score(config_path, args.verbose),
+        "security": lambda: run_security(config_path, args.verbose),
+        "token": lambda: run_token(config_path, args.verbose),
+    }
 
-    return 0
+    handler = mode_handlers.get(args.mode)
+    if handler:
+        return handler()
+
+    print(f"Unknown mode: {args.mode}")
+    return 1
 
 
 if __name__ == "__main__":

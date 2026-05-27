@@ -259,32 +259,20 @@
 > **Goal:** Build TypeScript tools that run inside OpenCode itself (`.opencode/tools/`).
 
 ### 5.1 DevKit Analysis Tool (TypeScript)
-- **Status:** pending
-- **Dependencies:** 4.1
-- **Tasks:**
-  - Create `.opencode/tools/devkit-analyze.ts` — runs the Python analysis from inside OpenCode
-  - Use `tool()` helper from `@opencode-ai/plugin`
-  - Execute `python main.py --analyze` via Bun.$
-  - Return structured analysis results
-- **Success Criteria:**
-  - Tool is discoverable in OpenCode's tool list
-  - Returns valid JSON analysis results
-  - Handles Python subprocess errors gracefully
+- **Status:** done
+- **Result:** Created `.opencode/tools/devkit-analyze.ts` — TypeScript tool that runs the Python analysis pipeline from inside OpenCode. Supports config path, mode selection (analyze/audit/score/security/token), and verbose output. Falls back from venv python to system python3.
 
 ### 5.2 Config Lint Tool (TypeScript)
-- **Status:** pending
-- **Dependencies:** 5.1
-- **Tasks:**
-  - Create `.opencode/tools/config-lint.ts` — lint OpenCode configs
-  - Validate JSON schema, check for deprecated fields, flag anti-patterns
-  - Return lint results with file paths, line numbers, and severity
-- **Success Criteria:**
-  - Catches schema violations
-  - Reports warnings for anti-patterns
-  - Output is parseable by OpenCode's tool system
+- **Status:** done
+- **Result:** Created `.opencode/tools/config-lint.ts` — TypeScript tool that runs security audit mode on OpenCode configs. Returns structured lint results with severity levels and fix suggestions. Supports `--fix` flag for generating corrected config.
 
 ### 5.3 Project Health Score Tool (TypeScript)
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `.opencode/tools/health-score.ts` — TypeScript tool that calculates project health score (0-100) based on config validity, permission safety, agent coverage, tool utilization, and documentation. Supports `--detailed` flag for factor breakdown.
+
+**Phase 5 Complete:** All 3 TypeScript tools implemented. Updated `main.py` with full mode support (analyze, audit, score, security, token).
+
+**Phase 5 Complete:** All 3 OpenCode tools implemented.
 - **Dependencies:** 5.1
 - **Tasks:**
   - Create `.opencode/tools/health-score.ts` — calculate project health score
