@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devkit-for-opencode"
+version = "0.1.0"
+description = "A modular AI-assisted development layer for structuring agents, tasks, and tools inside OpenCode"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "DevKit Contributors"}
+]
+dependencies = [
+    "crewai>=0.80.0",
+    "crewai-tools>=0.20.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "jsonschema>=4.20.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.4.0",
+]
+
+[project.scripts]
+devkit = "devkit.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["devkit*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

@@ -1,0 +1,44 @@
+# DevKit Crew Configuration
+# Defines the crew structure, agents, and task pipelines
+
+crew:
+  name: "opencode-analyzer"
+  description: "Analyzes OpenCode configurations for issues, optimizations, and best practices"
+  process: "sequential"  # sequential | hierarchical
+  memory: true
+  cache: true
+
+agents:
+  - name: "orchestrator"
+    role: "OpenCode Configuration Orchestrator"
+    goal: "Coordinate analysis of OpenCode configs across all dimensions"
+    backstory: "Expert in OpenCode configuration, permissions, agents, tools, and MCP servers"
+    verbose: true
+
+  - name: "config_auditor"
+    role: "Configuration Auditor"
+    goal: "Validate OpenCode configs for errors, anti-patterns, and security issues"
+    backstory: "Security-focused analyst specializing in config validation"
+    verbose: true
+
+  - name: "optimization_advisor"
+    role: "Optimization Advisor"
+    goal: "Suggest improvements for token usage, model selection, and permission tightening"
+    backstory: "Performance expert focused on reducing context costs and improving efficiency"
+    verbose: true
+
+tasks:
+  - name: "full_audit"
+    description: "Run complete analysis of the provided OpenCode config"
+    expected_output: "Comprehensive audit report in JSON format"
+    agent: "orchestrator"
+
+  - name: "security_scan"
+    description: "Scan config for security anti-patterns and misconfigurations"
+    expected_output: "Security findings with severity levels"
+    agent: "config_auditor"
+
+  - name: "token_optimization"
+    description: "Analyze token usage and suggest optimizations"
+    expected_output: "Token usage report with prioritized recommendations"
+    agent: "optimization_advisor"
