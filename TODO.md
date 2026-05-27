@@ -210,7 +210,8 @@
   - Handles missing files gracefully with partial reports
 
 ### 4.2 Security Scan Task
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tasks/security_scan.py` with 8 security checks: hardcoded secrets (recursive scanning), bash permissions (globally allowed, dangerous commands), edit permissions, external directories (broad patterns), doom_loop protection, MCP security (credentials, insecure URLs), agent permission weakening, plugin version pinning, and share configuration. Risk score (0-100) with severity-weighted deductions. Markdown report with findings table. 19 unit tests pass.
 - **Dependencies:** 3.2
 - **Tasks:**
   - Create `tasks/security_scan.py` — security-focused analysis
