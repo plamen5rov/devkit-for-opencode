@@ -53,7 +53,8 @@
 > **Goal:** Implement CrewAI tools that wrap OpenCode's built-in capabilities.
 
 ### 2.1 Config Reader Tool
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tools/config_reader.py` with JSON/JSONC parsing, schema validation, auto-detection of config paths, and warning flags for common issues (missing catch-all permission, disabled MCPs/agents). 9 unit tests pass covering valid, invalid, missing files, and warning scenarios.
 - **Dependencies:** 1.3
 - **Tasks:**
   - Create `tools/config_reader.py` — reads and parses `opencode.json` / `opencode.jsonc`
