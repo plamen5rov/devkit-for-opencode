@@ -318,7 +318,7 @@ devkit audit --format markdown
 | 6. Memory & Persistence | ✅ Done | SQLite history + recommendation tracker (26 tests) |
 | 7. CLI & UI | ✅ Done | CLI with 5 commands + report generator (42 tests) |
 | 8. Documentation | 🚧 In Progress | README, examples, AGENTS.md update |
-| 9. Advanced Features | 📋 Planned | Multi-agent orchestration, auto-remediation, plugin system |
+| 9. Advanced Features | ✅ Done | Multi-agent orchestration, auto-remediation, plugin system |
 
 ## License
 
