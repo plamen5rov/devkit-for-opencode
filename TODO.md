@@ -95,7 +95,8 @@
   - Tests cover JSON and markdown agent definitions
 
 ### 2.4 Skill Discovery & Analyzer Tool
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tools/skill_analyzer.py` with skill discovery across project/global paths, YAML frontmatter parsing, name/description validation, duplicate detection, and permission resolution per agent. 15 unit tests pass.
 - **Dependencies:** 2.1
 - **Tasks:**
   - Create `tools/skill_analyzer.py` — discovers and validates skills
