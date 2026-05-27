@@ -290,7 +290,14 @@
 > **Goal:** Add stateful memory layer for tracking analysis history and recommendations.
 
 ### 6.1 Analysis History Store
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/memory/history.py` — SQLite-backed store with schema for analysis records (timestamp, config path, health/risk scores, findings, recommendations). Supports querying by date range, config path, severity, and getting latest record. Health score trend API for tracking improvements over time. 14 unit tests pass.
+
+### 6.2 Recommendation Tracker
+- **Status:** done
+- **Result:** Created `devkit/memory/recommendations.py` — SQLite-backed tracker linking recommendations to analysis runs. Supports status lifecycle (open → applied/dismissed), notes, and diff report generation comparing latest vs previous analysis (new, resolved, persistent recommendations with score change). Summary API for open/applied/dismissed counts. 12 unit tests pass.
+
+**Phase 6 Complete:** Memory & Persistence implemented with 26 total tests passing.
 - **Dependencies:** 1.3
 - **Tasks:**
   - Create `memory/history.py` — stores analysis results over time
