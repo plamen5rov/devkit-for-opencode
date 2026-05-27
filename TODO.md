@@ -223,7 +223,8 @@
   - Tests verify detection of known bad configs
 
 ### 4.3 Token Optimization Task
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tasks/token_optimization.py` with token usage analysis across MCP servers, agents, skills, and commands. Generates breakdown with per-item token estimates, prioritized recommendations (high-cost MCPs, model downgrades, disabled cleanup, long descriptions, large templates), and Markdown report with percentage breakdown. 14 unit tests pass.
 - **Dependencies:** 3.3
 - **Tasks:**
   - Create `tasks/token_optimization.py` — analyze and reduce token usage
@@ -236,7 +237,10 @@
   - Provides concrete reduction strategies with estimated savings
 
 ### 4.4 Migration Assistant Task
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tasks/migration_assistant.py` with migration detection for legacy tools→permission, boolean tools, legacy model formats (missing provider prefix), boolean share→string, @latest plugins, and agent-level tools. Generates migrated config, Markdown report with change table, and optional JSON diff output. Handles invalid configs by parsing raw content. 14 unit tests pass.
+
+**Phase 4 Complete:** All 4 tasks implemented with 60 total tests passing.
 - **Dependencies:** 3.2
 - **Tasks:**
   - Create `tasks/migration_assistant.py` — help migrate between OpenCode versions
