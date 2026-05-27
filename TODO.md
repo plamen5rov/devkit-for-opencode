@@ -81,7 +81,8 @@
   - Tests verify at least 5 permission resolution scenarios
 
 ### 2.3 Agent Config Analyzer Tool
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tools/agent_analyzer.py` with agent parsing, mode/model/permission extraction, dependency graph from task permissions, and validation (invalid modes, bad temperature/top_p, missing descriptions, deprecated tools, circular dependencies, disabled subagents, builtin overrides). 16 unit tests pass.
 - **Dependencies:** 2.1
 - **Tasks:**
   - Create `tools/agent_analyzer.py` — analyzes agent definitions
