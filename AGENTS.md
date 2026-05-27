@@ -6,9 +6,15 @@
 
 ## Project State
 
-This is a **CrewAI-based toolkit** in early scaffolding phase. There is **no executable code yet** — only planning documents and reference knowledge.
+This is a **fully implemented CrewAI-based toolkit** with 256 passing tests across 7 completed phases.
 
-Do not attempt to run `pytest`, `python main.py`, or any build commands. Nothing exists to execute.
+All core components are implemented:
+- 6 analyzer tools (config, permissions, agents, skills, MCP, commands)
+- 3 CrewAI agents (orchestrator, auditor, advisor)
+- 4 workflow tasks (audit, security, token, migration)
+- Memory layer with SQLite-backed history and recommendation tracking
+- CLI with 5 commands and report generator (JSON/Markdown/HTML)
+- 3 TypeScript tools for OpenCode runtime integration
 
 ---
 
@@ -18,17 +24,24 @@ The system is built around three CrewAI concepts:
 
 | Primitive | Location | Purpose |
 |-----------|----------|---------|
-| Agents | `agents/` (planned) | Decision-making units |
-| Tasks | `tasks/` (planned) | Atomic work units |
-| Tools | `tools/` (planned) | Reusable capabilities |
+| Tools | `devkit/tools/` | 6 analyzers for config, permissions, agents, skills, MCP, commands |
+| Agents | `devkit/agents/` | Orchestrator, Config Auditor, Optimization Advisor |
+| Tasks | `devkit/tasks/` | Full audit, security scan, token optimization, migration assistant |
+
+Additional components:
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| CLI | `devkit/cli.py` | Entry point with 5 subcommands |
+| Memory | `devkit/memory/` | SQLite history store and recommendation tracker |
+| Output | `devkit/output/` | Report generator (JSON, Markdown, HTML) |
 
 ---
 
 ## How to Work in This Repo
 
-### 1. Always start with TASKS.md
+### 1. Always start with TODO.md
 
-Read `TASKS.md` first. Select the next pending task with satisfied dependencies. Execute one task at a time.
+Read `TODO.md` first. Select the next pending task with satisfied dependencies. Execute one task at a time.
 
 ### 2. Follow the Task Execution Protocol
 
@@ -38,31 +51,66 @@ The full protocol is in `AGENT.md`. Key rules:
 - Add a short result summary to the task entry
 - Never delete tasks — only update status
 
-### 3. Use knowledge/ as Reference Only
+### 3. Run Tests After Every Change
 
-The `knowledge/` directory contains OpenCode documentation snapshots. These are **read-only reference material** — do not modify them. Use them to understand OpenCode's APIs, agents, tools, and config patterns when building the toolkit.
+```bash
+source .venv/bin/activate && pytest
+```
+
+All 256 tests must pass. Add new tests for any new functionality.
+
+### 4. Use knowledge/ as Reference Only
+
+The `knowledge/` directory contains OpenCode documentation snapshots. These are **read-only reference material** — do not modify them.
 
 ---
 
-## Expected Project Structure
-
-When implementation begins, follow this layout:
+## Project Structure
 
 ```
 devkit-for-opencode/
-├── agents/          # CrewAI agent definitions
-├── tasks/           # Task definitions
-├── tools/           # Reusable tool implementations
-├── configs/         # Configuration files
-├── memory/          # State/persistence layer
-├── tests/           # Test suite
-├── output/          # Generated outputs
-├── knowledge/       # OpenCode docs (reference only)
-├── main.py          # Entry point
-├── pyproject.toml   # Python package config
-├── AGENT.md         # Role definition + TEP
-├── ARCHITECTURE.md  # System design
-└── TASKS.md         # Task tracker
+├── devkit/
+│   ├── agents/          # CrewAI agents (orchestrator, auditor, advisor)
+│   ├── cli.py           # CLI entry point with argparse subcommands
+│   ├── configs/         # Configuration files
+│   ├── memory/          # SQLite-backed history store and recommendation tracker
+│   ├── output/          # Report generator (JSON, Markdown, HTML)
+│   ├── tasks/           # Workflow tasks (audit, security, token, migration)
+│   ├── tools/           # Core analyzer tools (6 total)
+│   └── __init__.py
+├── tests/               # 256 unit tests
+├── examples/            # Example OpenCode configs (good, bad, minimal)
+├── .opencode/tools/     # TypeScript tools for OpenCode runtime
+├── knowledge/           # OpenCode reference docs (read-only)
+├── output/              # Generated reports
+├── main.py              # Legacy entry point (use `devkit` CLI instead)
+├── pyproject.toml       # Python package config
+├── README.md            # Project documentation
+├── AGENTS.md            # This file
+├── ARCHITECTURE.md      # System design
+├── TODO.md              # Phased implementation roadmap
+└── TASKS.md             # Task tracker
+```
+
+---
+
+## CLI Usage
+
+```bash
+# Run full analysis
+devkit analyze --config-path ~/.config/opencode/opencode.json
+
+# Security audit
+devkit audit --format markdown
+
+# Health score
+devkit score --detailed
+
+# View history
+devkit history --limit 5
+
+# Migration assistant
+devkit migrate --diff
 ```
 
 ---
@@ -81,8 +129,7 @@ devkit-for-opencode/
 
 | File | When to Read |
 |------|-------------|
-| `TASKS.md` | Always first — find your work |
-| `AGENT.md` | Before starting any task — understand role and protocol |
+| `TODO.md` | Always first — find your work |
 | `ARCHITECTURE.md` | When designing new components |
 | `knowledge/*.md` | When you need OpenCode API/config details |
 
@@ -93,7 +140,7 @@ devkit-for-opencode/
 - Do not modify files in `knowledge/`
 - Do not create agents, tasks, or tools that overlap with existing ones
 - Do not add dependencies without noting why in the commit message
-- Do not skip the TASKS.md workflow — all work must be tracked
+- Do not skip the TODO.md workflow — all work must be tracked
 
 ## graphify
 

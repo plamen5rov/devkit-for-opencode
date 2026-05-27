@@ -1,0 +1,43 @@
+{
+  "model": "claude-sonnet-4-20250514",
+  "tools": true,
+  "share": true,
+  "permission": {
+    "edit": "allow",
+    "bash": "allow",
+    "*": "allow"
+  },
+  "plugin": [
+    "opencode-wakatime@latest"
+  ],
+  "mcp": {
+    "servers": {
+      "sentry": {
+        "url": "http://localhost:3000/mcp",
+        "enabled": true,
+        "headers": {
+          "Authorization": "Bearer sk-live-abc123secret"
+        }
+      },
+      "disabled-server": {
+        "url": "https://example.com/mcp",
+        "enabled": false
+      }
+    }
+  },
+  "agent": {
+    "explore": {
+      "disabled": true,
+      "tools": ["read", "glob"]
+    },
+    "general": {
+      "model": "claude-sonnet-4-20250514",
+      "temperature": 1.5,
+      "top_p": 2.0,
+      "permission": {
+        "bash": "allow",
+        "*": "allow"
+      }
+    }
+  }
+}
