@@ -67,7 +67,8 @@
   - Unit tests cover valid, invalid, and missing file cases
 
 ### 2.2 Permission Analyzer Tool
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tools/permission_analyzer.py` with permission precedence resolution (global → agent → granular), effective permission matrix for all 16 known tools, and issue detection (dangerous bash commands, missing doom_loop/external_directory, agent override weakening, deny warnings). 12 unit tests pass.
 - **Dependencies:** 2.1
 - **Tasks:**
   - Create `tools/permission_analyzer.py` — analyzes permission rules
