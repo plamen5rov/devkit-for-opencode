@@ -123,7 +123,10 @@
   - Tests cover local, remote, and OAuth-configured servers
 
 ### 2.6 Command Analyzer Tool
-- **Status:** pending
+- **Status:** done
+- **Result:** Created `devkit/tools/command_analyzer.py` with command discovery, frontmatter parsing, placeholder extraction ($ARGUMENTS, $N, !`shell`, @file), dangerous shell command detection, and validation (missing descriptions, bad model format, subtask+agent double invocation). 15 unit tests pass.
+
+**Phase 2 Complete:** All 6 core tools implemented with 82 total tests passing.
 - **Dependencies:** 2.1
 - **Tasks:**
   - Create `tools/command_analyzer.py` — analyzes custom slash commands
