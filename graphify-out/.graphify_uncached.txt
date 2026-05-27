@@ -1,0 +1,14 @@
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/models.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/rules.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/acp-support.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/themes.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/agent-skills.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/permissions.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/agents-config.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/mcp-servers.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/keybinds.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/lsp-servers.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/tools.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/commands.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/formatters.md
+/home/bluedragon/CODE/projects/devkit-for-opencode/knowledge/custom-tools.md

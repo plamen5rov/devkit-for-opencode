@@ -1,0 +1,25 @@
+# Graphify ignore file — same syntax as .gitignore
+
+# Ignore specific directories and file types
+AGENTS.md
+AGENT.md
+ARCHITECTURE.md
+TASKS.md
+README.md
+DONE.md
+ERROR-LOG.md
+.graphifyignore
+graphify-out/
+node_modules/
+dist/
+build/
+__pycache__/
+*.pyc
+.env
+.venv/
+.DS_Store
+*.swp
+*.swo
+*.lock
+package.json
+pyproject.toml
