@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from './ThemeToggle'
 import { useSession } from '@/lib/SessionContext'
@@ -32,6 +33,12 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const { clearAll } = useSession()
+  const queryClient = useQueryClient()
+
+  const handleClearAll = () => {
+    clearAll()
+    queryClient.clear()
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -62,7 +69,7 @@ export function Layout({ children }: LayoutProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={clearAll}
+              onClick={handleClearAll}
               className="text-muted-foreground hover:text-destructive"
             >
               <Trash2 className="mr-1 h-4 w-4" />
