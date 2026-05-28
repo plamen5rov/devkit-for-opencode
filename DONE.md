@@ -2,6 +2,10 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] fix: remove misleading tool config example from README — custom tools are auto-discovered (files modified: README.md, .opencode/opencode.json)
+  - Removed incorrect `"tool"` config JSON block from README OpenCode Integration section
+  - Removed invalid `"tool"` key from project's .opencode/opencode.json that caused schema error
+
 - [2026-05-28] fix: Clear All Data button now clears CodeMirror editors on all tabs (files modified: web/src/pages/Analyze.tsx, web/src/pages/Audit.tsx, web/src/pages/Score.tsx, web/src/pages/Migrate.tsx)
   - Added reverse sync useEffect (configContent → configText) so session context resets propagate to local editor state
   - Also added allow rules for source venv, make, bun, pytest to OpenCode global bash permissions

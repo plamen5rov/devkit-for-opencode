@@ -188,18 +188,7 @@ DevKit includes TypeScript tools that run inside OpenCode itself. Place these in
 | `config-lint.ts` | Security audit with `--fix` support |
 | `health-score.ts` | Calculate health score with detailed breakdown |
 
-Example `.opencode/opencode.json` configuration:
-
-```json
-{
-  "tool": {
-    "devkit-analyze": {
-      "command": "npx tsx .opencode/tools/devkit-analyze.ts",
-      "description": "Analyze OpenCode configuration"
-    }
-  }
-}
-```
+These tools are auto-discovered by OpenCode at startup — just place them in the directory and restart OpenCode. No config declaration needed.
 
 ## Architecture
 
