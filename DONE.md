@@ -13,6 +13,14 @@
 
 ## Web UI Integration
 
+- [2026-05-28] feat(analyze): colored issue/warning cards with checkboxes and fix generation (files modified: web/src/pages/Analyze.tsx, web/src/components/ui/checkbox.tsx, web/package.json)
+  - Red-tinted cards for Issues, yellow-tinted for Warnings with colored borders
+  - Checkbox next to each fixable issue for selective fixing
+  - Fix All / Deselect All toggle button
+  - Generate Fixed Config button outputs corrected JSON in CodeMirror editor
+  - Copy button with visual feedback for quick clipboard paste
+  - Detects 8 fix types: catch-all, bash, edit, small_model, schema, share, model prefix, disabled MCP servers
+
 - [2026-05-28] fix(analyze): show issues/warnings details, replace raw JSON with structured cards (files modified: web/src/pages/Analyze.tsx)
   - Add Issues section displaying orchestrator.issues with full descriptions
   - Add Warnings section displaying orchestrator.warnings with full descriptions
