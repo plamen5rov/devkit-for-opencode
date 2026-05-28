@@ -1,6 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
+import api from '@/lib/api'
 import { ThemeToggle } from './ThemeToggle'
 import { useSession } from '@/lib/SessionContext'
 import { Button } from './ui/button'
@@ -35,9 +36,13 @@ export function Layout({ children }: LayoutProps) {
   const { clearAll } = useSession()
   const queryClient = useQueryClient()
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
+    try {
+      await api.delete('/history/all')
+    } catch {}
+    localStorage.removeItem('devkit-session')
     clearAll()
-    queryClient.clear()
+    queryClient.invalidateQueries()
   }
 
   return (

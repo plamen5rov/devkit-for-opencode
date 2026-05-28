@@ -1,4 +1,4 @@
-"""History routes — GET /api/history, GET /api/history/{id}, GET /api/history/trend"""
+"""History routes — GET /api/history, DELETE /api/history/all, GET /api/history/{id}, GET /api/history/trend"""
 
 from __future__ import annotations
 
@@ -59,6 +59,16 @@ async def get_trend(
         "config_path": config_path,
         "data": [TrendRecord(**t) for t in trend_data],
     }
+
+
+@router.delete("/all")
+async def clear_history():
+    """Clear all analysis history records."""
+    store = _get_store()
+    if not store:
+        return {"deleted": 0}
+    count = store.clear_all()
+    return {"deleted": count}
 
 
 @router.get("/{record_id}")
