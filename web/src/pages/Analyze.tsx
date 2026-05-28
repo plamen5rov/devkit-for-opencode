@@ -197,6 +197,10 @@ export function AnalyzePage() {
   }, [configText, setConfigContent])
 
   useEffect(() => {
+    setConfigText(configContent)
+  }, [configContent])
+
+  useEffect(() => {
     if (analyzeMutation.data?.data) {
       setTabResult('analyze', analyzeMutation.data.data)
     }

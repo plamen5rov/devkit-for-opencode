@@ -30,6 +30,10 @@ export function MigratePage() {
     if (configText) setConfigContent(configText)
   }, [configText, setConfigContent])
 
+  useEffect(() => {
+    setConfigText(configContent)
+  }, [configContent])
+
   const migrateMutation = useMutation({
     mutationFn: ({ content, path }: { content: string | null; path?: string }) =>
       runMigrate(content, path),

@@ -22,6 +22,10 @@ export function ScorePage() {
     if (configText) setConfigContent(configText)
   }, [configText, setConfigContent])
 
+  useEffect(() => {
+    setConfigText(configContent)
+  }, [configContent])
+
   const scoreMutation = useMutation({
     mutationFn: ({ content, path, detailed }: { content: string | null; path?: string; detailed: boolean }) =>
       getScore(content, path, detailed),

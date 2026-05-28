@@ -33,6 +33,10 @@ export function AuditPage() {
     if (configText) setConfigContent(configText)
   }, [configText, setConfigContent])
 
+  useEffect(() => {
+    setConfigText(configContent)
+  }, [configContent])
+
   const auditMutation = useMutation({
     mutationFn: ({ content, path }: { content: string | null; path?: string }) =>
       runAudit(content, path),
