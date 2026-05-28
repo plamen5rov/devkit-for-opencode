@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { analyzeConfig, uploadConfig } from '@/lib/api'
 import { Button } from '@/components/ui/button'
@@ -139,13 +139,31 @@ function applyFixes(config: any, selectedIds: Set<string>, fixes: FixItem[]): an
   return patched
 }
 
+const SESSION_KEY = 'devkit-analyze-state'
+
+function loadState() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch {}
+  return null
+}
+
+function saveState(state: { configText: string; activeTab: TabType; result: any }) {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state))
+  } catch {}
+}
+
 export function AnalyzePage() {
-  const [configText, setConfigText] = useState('')
-  const [activeTab, setActiveTab] = useState<TabType>('paste')
+  const saved = loadState()
+  const [configText, setConfigText] = useState(saved?.configText ?? '')
+  const [activeTab, setActiveTab] = useState<TabType>(saved?.activeTab ?? 'paste')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFixes, setSelectedFixes] = useState<Set<string>>(new Set())
   const [fixedConfigText, setFixedConfigText] = useState('')
   const [copied, setCopied] = useState(false)
+  const [storedResult, setStoredResult] = useState<any>(saved?.result ?? null)
 
   const analyzeMutation = useMutation({
     mutationFn: (content: string) => analyzeConfig(content),
@@ -166,6 +184,7 @@ export function AnalyzePage() {
     if (configText.trim()) {
       setSelectedFixes(new Set())
       setFixedConfigText('')
+      setStoredResult(null)
       analyzeMutation.mutate(configText)
     }
   }
@@ -182,9 +201,15 @@ export function AnalyzePage() {
     }
   }
 
-  const result = analyzeMutation.data?.data
+  const result = analyzeMutation.data?.data ?? storedResult
   const summary = result?.orchestrator?.summary ?? {}
   const findings = result?.audit?.findings ?? []
+
+  useEffect(() => {
+    if (configText || result) {
+      saveState({ configText, activeTab, result })
+    }
+  }, [configText, activeTab, result])
 
   const parsedConfig = useMemo(() => {
     try {
@@ -338,125 +363,6 @@ export function AnalyzePage() {
               ))}
             </div>
           </div>
-
-          {issueFixes.length > 0 && (
-            <Card className="border-red-500/60 bg-red-500/5 dark:bg-red-500/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-500">
-                  <span className="h-3 w-3 rounded-full bg-red-500" />
-                  Issues ({issueFixes.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {issueFixes.map((fix) => (
-                    <li key={fix.id} className="flex items-start gap-3">
-                      <Checkbox
-                        id={`fix-${fix.id}`}
-                        checked={selectedFixes.has(fix.id)}
-                        onCheckedChange={() => handleToggleFix(fix.id)}
-                        className="mt-0.5 border-red-400 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
-                      />
-                      <label
-                        htmlFor={`fix-${fix.id}`}
-                        className="cursor-pointer text-sm leading-relaxed"
-                      >
-                        {fix.label}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {warningFixes.length > 0 && (
-            <Card className="border-yellow-500/60 bg-yellow-500/5 dark:bg-yellow-500/10">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-yellow-500">
-                  <span className="h-3 w-3 rounded-full bg-yellow-500" />
-                  Warnings ({warningFixes.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  {warningFixes.map((fix) => (
-                    <li key={fix.id} className="flex items-start gap-3">
-                      <Checkbox
-                        id={`fix-${fix.id}`}
-                        checked={selectedFixes.has(fix.id)}
-                        onCheckedChange={() => handleToggleFix(fix.id)}
-                        className="mt-0.5 border-yellow-400 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-                      />
-                      <label
-                        htmlFor={`fix-${fix.id}`}
-                        className="cursor-pointer text-sm leading-relaxed"
-                      >
-                        {fix.label}
-                      </label>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-
-          {fixableCount > 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleFixAll}
-                  >
-                    {selectedFixes.size === fixableCount ? 'Deselect All' : 'Fix All'}
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    {selectedFixes.size} of {fixableCount} selected
-                  </span>
-                  <Button
-                    onClick={handleGenerateFixed}
-                    disabled={selectedFixes.size === 0}
-                    className="ml-auto"
-                  >
-                    <Wrench className="mr-2 h-4 w-4" />
-                    Generate Fixed Config
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {fixedConfigText && (
-            <Card className="border-green-500/60">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2 text-green-500">
-                    <Check className="h-5 w-5" />
-                    Fixed Configuration
-                  </span>
-                  <Button variant="outline" size="sm" onClick={handleCopyFixed}>
-                    {copied ? (
-                      <><Check className="mr-2 h-4 w-4" /> Copied!</>
-                    ) : (
-                      <><Copy className="mr-2 h-4 w-4" /> Copy</>
-                    )}
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CodeMirror
-                  value={fixedConfigText}
-                  height="400px"
-                  extensions={[json()]}
-                  theme={vscodeDark}
-                  basicSetup={{ lineNumbers: true, foldGutter: true }}
-                  editable={false}
-                />
-              </CardContent>
-            </Card>
-          )}
 
           {findings.length > 0 && (
             <Card>
@@ -650,6 +556,125 @@ export function AnalyzePage() {
                     </Card>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {issueFixes.length > 0 && (
+            <Card className="border-red-500/60 bg-red-500/5 dark:bg-red-500/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-500">
+                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                  Issues ({issueFixes.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {issueFixes.map((fix) => (
+                    <li key={fix.id} className="flex items-start gap-3">
+                      <Checkbox
+                        id={`fix-${fix.id}`}
+                        checked={selectedFixes.has(fix.id)}
+                        onCheckedChange={() => handleToggleFix(fix.id)}
+                        className="mt-0.5 border-red-400 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+                      />
+                      <label
+                        htmlFor={`fix-${fix.id}`}
+                        className="cursor-pointer text-sm leading-relaxed"
+                      >
+                        {fix.label}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {warningFixes.length > 0 && (
+            <Card className="border-yellow-500/60 bg-yellow-500/5 dark:bg-yellow-500/10">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-yellow-500">
+                  <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                  Warnings ({warningFixes.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-3">
+                  {warningFixes.map((fix) => (
+                    <li key={fix.id} className="flex items-start gap-3">
+                      <Checkbox
+                        id={`fix-${fix.id}`}
+                        checked={selectedFixes.has(fix.id)}
+                        onCheckedChange={() => handleToggleFix(fix.id)}
+                        className="mt-0.5 border-yellow-400 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+                      />
+                      <label
+                        htmlFor={`fix-${fix.id}`}
+                        className="cursor-pointer text-sm leading-relaxed"
+                      >
+                        {fix.label}
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {fixableCount > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleFixAll}
+                  >
+                    {selectedFixes.size === fixableCount ? 'Deselect All' : 'Fix All'}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {selectedFixes.size} of {fixableCount} selected
+                  </span>
+                  <Button
+                    onClick={handleGenerateFixed}
+                    disabled={selectedFixes.size === 0}
+                    className="ml-auto"
+                  >
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Generate Fixed Config
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {fixedConfigText && (
+            <Card className="border-green-500/60">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-green-500">
+                    <Check className="h-5 w-5" />
+                    Fixed Configuration
+                  </span>
+                  <Button variant="outline" size="sm" onClick={handleCopyFixed}>
+                    {copied ? (
+                      <><Check className="mr-2 h-4 w-4" /> Copied!</>
+                    ) : (
+                      <><Copy className="mr-2 h-4 w-4" /> Copy</>
+                    )}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CodeMirror
+                  value={fixedConfigText}
+                  height="400px"
+                  extensions={[json()]}
+                  theme={vscodeDark}
+                  basicSetup={{ lineNumbers: true, foldGutter: true }}
+                  editable={false}
+                />
               </CardContent>
             </Card>
           )}

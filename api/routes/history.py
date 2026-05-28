@@ -44,20 +44,6 @@ async def list_history(
     }
 
 
-@router.get("/{record_id}")
-async def get_history_record(record_id: int):
-    """Get a single analysis record by ID."""
-    store = _get_store()
-    if not store:
-        raise HTTPException(status_code=404, detail="No history database found")
-
-    record = store.get_record(record_id)
-    if not record:
-        raise HTTPException(status_code=404, detail=f"Record {record_id} not found")
-
-    return record.to_dict()
-
-
 @router.get("/trend")
 async def get_trend(
     config_path: Optional[str] = Query(None),
@@ -73,3 +59,17 @@ async def get_trend(
         "config_path": config_path,
         "data": [TrendRecord(**t) for t in trend_data],
     }
+
+
+@router.get("/{record_id}")
+async def get_history_record(record_id: int):
+    """Get a single analysis record by ID."""
+    store = _get_store()
+    if not store:
+        raise HTTPException(status_code=404, detail="No history database found")
+
+    record = store.get_record(record_id)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Record {record_id} not found")
+
+    return record.to_dict()
