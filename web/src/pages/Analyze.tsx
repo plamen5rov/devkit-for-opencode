@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { analyzeConfig, uploadConfig } from '@/lib/api'
+import { useSession } from '@/lib/SessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -139,31 +140,14 @@ function applyFixes(config: any, selectedIds: Set<string>, fixes: FixItem[]): an
   return patched
 }
 
-const SESSION_KEY = 'devkit-analyze-state'
-
-function loadState() {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {}
-  return null
-}
-
-function saveState(state: { configText: string; activeTab: TabType; result: any }) {
-  try {
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state))
-  } catch {}
-}
-
 export function AnalyzePage() {
-  const saved = loadState()
-  const [configText, setConfigText] = useState(saved?.configText ?? '')
-  const [activeTab, setActiveTab] = useState<TabType>(saved?.activeTab ?? 'paste')
+  const { configContent, tabResults, setConfigContent, setTabResult } = useSession()
+  const [configText, setConfigText] = useState(configContent)
+  const [activeTab, setActiveTab] = useState<TabType>('paste')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [selectedFixes, setSelectedFixes] = useState<Set<string>>(new Set())
   const [fixedConfigText, setFixedConfigText] = useState('')
   const [copied, setCopied] = useState(false)
-  const [storedResult, setStoredResult] = useState<any>(saved?.result ?? null)
 
   const analyzeMutation = useMutation({
     mutationFn: (content: string) => analyzeConfig(content),
@@ -174,6 +158,7 @@ export function AnalyzePage() {
     onSuccess: (res) => {
       const content = (res.data as any).content
       setConfigText(content)
+      setConfigContent(content)
       if (content) {
         analyzeMutation.mutate(content)
       }
@@ -184,7 +169,7 @@ export function AnalyzePage() {
     if (configText.trim()) {
       setSelectedFixes(new Set())
       setFixedConfigText('')
-      setStoredResult(null)
+      setTabResult('analyze', null)
       analyzeMutation.mutate(configText)
     }
   }
@@ -195,21 +180,27 @@ export function AnalyzePage() {
       setSelectedFile(file)
       const reader = new FileReader()
       reader.onload = (ev) => {
-        setConfigText(ev.target?.result as string)
+        const text = ev.target?.result as string
+        setConfigText(text)
+        setConfigContent(text)
       }
       reader.readAsText(file)
     }
   }
 
-  const result = analyzeMutation.data?.data ?? storedResult
+  const result = analyzeMutation.data?.data ?? tabResults.analyze
   const summary = result?.orchestrator?.summary ?? {}
   const findings = result?.audit?.findings ?? []
 
   useEffect(() => {
-    if (configText || result) {
-      saveState({ configText, activeTab, result })
+    if (configText) setConfigContent(configText)
+  }, [configText, setConfigContent])
+
+  useEffect(() => {
+    if (analyzeMutation.data?.data) {
+      setTabResult('analyze', analyzeMutation.data.data)
     }
-  }, [configText, activeTab, result])
+  }, [analyzeMutation.data, setTabResult])
 
   const parsedConfig = useMemo(() => {
     try {

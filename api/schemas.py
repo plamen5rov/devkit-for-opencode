@@ -15,17 +15,20 @@ class AnalyzeRequest(BaseModel):
 
 class AuditRequest(BaseModel):
     config_path: Optional[str] = None
+    config_content: Optional[str] = None
     verbose: bool = False
 
 
 class ScoreRequest(BaseModel):
     config_path: Optional[str] = None
+    config_content: Optional[str] = None
     detailed: bool = False
     verbose: bool = False
 
 
 class MigrateRequest(BaseModel):
     config_path: Optional[str] = None
+    config_content: Optional[str] = None
     verbose: bool = False
 
 

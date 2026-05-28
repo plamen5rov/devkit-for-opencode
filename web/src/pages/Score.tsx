@@ -1,25 +1,58 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { getScore } from '@/lib/api'
+import { useSession } from '@/lib/SessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScoreGauge } from '@/components/ScoreGauge'
-import { Loader2, ChevronDown, ChevronRight } from 'lucide-react'
+import CodeMirror from '@uiw/react-codemirror'
+import { json } from '@codemirror/lang-json'
+import { vscodeDark } from '@uiw/codemirror-theme-vscode'
+import { Loader2, Upload } from 'lucide-react'
 
 export function ScorePage() {
-  const [configPath, setConfigPath] = useState('')
+  const { configContent, tabResults, setConfigContent, setTabResult } = useSession()
+  const [configText, setConfigText] = useState(configContent)
+  const [activeTab, setActiveTab] = useState<'paste' | 'upload'>('paste')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [detailed, setDetailed] = useState(true)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (configText) setConfigContent(configText)
+  }, [configText, setConfigContent])
 
   const scoreMutation = useMutation({
-    mutationFn: ({ path, detailed }: { path?: string; detailed: boolean }) =>
-      getScore(path, detailed),
+    mutationFn: ({ content, path, detailed }: { content: string | null; path?: string; detailed: boolean }) =>
+      getScore(content, path, detailed),
   })
 
   const handleRun = () => {
-    scoreMutation.mutate({ path: configPath || undefined, detailed })
+    if (configText.trim()) {
+      scoreMutation.mutate({ content: configText, detailed })
+    }
   }
 
-  const result = scoreMutation.data?.data
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string
+        setConfigText(text)
+      }
+      reader.readAsText(file)
+    }
+  }
+
+  useEffect(() => {
+    if (scoreMutation.data?.data) {
+      setTabResult('score', scoreMutation.data.data)
+    }
+  }, [scoreMutation.data, setTabResult])
+
+  const result = scoreMutation.data?.data ?? tabResults.score
   const breakdown = result?.breakdown
 
   return (
@@ -34,14 +67,47 @@ export function ScorePage() {
           <CardTitle>Configuration</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="~/.config/opencode/opencode.json"
-              className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-              value={configPath}
-              onChange={(e) => setConfigPath(e.target.value)}
+          <div className="flex gap-1 border-b">
+            {(['paste', 'upload'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+              >
+                {tab === 'paste' ? 'Paste JSON' : 'Upload File'}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'paste' && (
+            <CodeMirror
+              value={configText}
+              onChange={setConfigText}
+              height="200px"
+              extensions={[json()]}
+              theme={vscodeDark}
+              placeholder='Paste your opencode.json here...'
+              basicSetup={{ lineNumbers: true, foldGutter: true }}
             />
+          )}
+
+          {activeTab === 'upload' && (
+            <div className="space-y-2">
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".json,.jsonc"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button variant="outline" onClick={() => fileRef.current?.click()}>
+                <Upload className="mr-2 h-4 w-4" />
+                {selectedFile ? selectedFile.name : 'Choose File'}
+              </Button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-4">
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -50,13 +116,13 @@ export function ScorePage() {
               />
               Detailed
             </label>
+            <Button onClick={handleRun} disabled={scoreMutation.isPending || !configText.trim()}>
+              {scoreMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Calculate Score
+            </Button>
           </div>
-          <Button onClick={handleRun} disabled={scoreMutation.isPending}>
-            {scoreMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
-            Calculate Score
-          </Button>
         </CardContent>
       </Card>
 

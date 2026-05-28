@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -27,6 +28,23 @@ def detect_config() -> Optional[Path]:
 
 def resolve_config_path(config_path: Optional[str]) -> Optional[Path]:
     """Resolve config path from request or auto-detect."""
+    if config_path:
+        p = Path(config_path)
+        if p.exists():
+            return p
+        return None
+    return detect_config()
+
+
+def resolve_config_from_request(
+    config_path: Optional[str] = None,
+    config_content: Optional[str] = None,
+) -> Optional[Path]:
+    """Resolve config from path, inline content, or auto-detect."""
+    if config_content:
+        tmp = Path(tempfile.gettempdir()) / "devkit-inline-config.json"
+        tmp.write_text(config_content, encoding="utf-8")
+        return tmp
     if config_path:
         p = Path(config_path)
         if p.exists():

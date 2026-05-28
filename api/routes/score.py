@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from api.schemas import ScoreRequest
-from api.utils import resolve_config_path
+from api.utils import resolve_config_from_request
 from devkit.agents.orchestrator import run_orchestration
 
 router = APIRouter(prefix="/score", tags=["score"])
@@ -14,11 +14,11 @@ router = APIRouter(prefix="/score", tags=["score"])
 @router.post("")
 async def get_score(req: ScoreRequest):
     """Calculate health score for an OpenCode config."""
-    config_path = resolve_config_path(req.config_path)
+    config_path = resolve_config_from_request(req.config_path, req.config_content)
     if not config_path:
         raise HTTPException(
             status_code=400,
-            detail="No OpenCode config found. Specify config_path or place opencode.json in .opencode/",
+            detail="No OpenCode config found. Specify config_path, paste JSON content, or place opencode.json in .opencode/",
         )
 
     try:

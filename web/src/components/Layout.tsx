@@ -1,6 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from './ThemeToggle'
+import { useSession } from '@/lib/SessionContext'
+import { Button } from './ui/button'
 import {
   LayoutDashboard,
   Shield,
@@ -10,6 +12,7 @@ import {
   GitCompare,
   Lightbulb,
   Play,
+  Trash2,
 } from 'lucide-react'
 
 const navItems = [
@@ -28,6 +31,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const location = useLocation()
+  const { clearAll } = useSession()
 
   return (
     <div className="min-h-screen bg-background">
@@ -54,7 +58,16 @@ export function Layout({ children }: LayoutProps) {
               </NavLink>
             ))}
           </nav>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearAll}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              <span className="hidden sm:inline">Clear All Data</span>
+            </Button>
             <ThemeToggle />
           </div>
         </div>

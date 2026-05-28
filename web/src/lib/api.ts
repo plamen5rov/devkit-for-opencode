@@ -93,11 +93,11 @@ export interface RecommendationItem {
 export const analyzeConfig = (configContent: string) =>
   api.post<AnalyzeResult>('/analyze', { config_content: configContent })
 
-export const runAudit = (configPath?: string) =>
-  api.post<AuditResult>('/audit', { config_path: configPath })
+export const runAudit = (configContent: string | null, configPath?: string) =>
+  api.post<AuditResult>('/audit', { config_content: configContent, config_path: configPath })
 
-export const getScore = (configPath?: string, detailed = false) =>
-  api.post<ScoreResult>('/score', { config_path: configPath, detailed })
+export const getScore = (configContent: string | null, configPath?: string, detailed = false) =>
+  api.post<ScoreResult>('/score', { config_content: configContent, config_path: configPath, detailed })
 
 export const getHistory = (configPath?: string, limit = 10) =>
   api.get<{ records: HistoryRecord[]; total: number }>('/history', {
@@ -112,8 +112,8 @@ export const getTrend = (configPath?: string, limit = 20) =>
     params: { config_path: configPath, limit },
   })
 
-export const runMigrate = (configPath?: string) =>
-  api.post<MigrationResult>('/migrate', { config_path: configPath })
+export const runMigrate = (configContent: string | null, configPath?: string) =>
+  api.post<MigrationResult>('/migrate', { config_content: configContent, config_path: configPath })
 
 export const getRecommendations = (status?: string, limit = 50) =>
   api.get<{ recommendations: RecommendationItem[]; summary: Record<string, number> }>('/recommendations', {
