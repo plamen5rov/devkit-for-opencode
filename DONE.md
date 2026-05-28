@@ -2,6 +2,11 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] docs: add README audit step to AGENTS.md commit workflow (files modified: AGENTS.md, README.md)
+  - AGENTS.md section 5 now lists "Audit README.md" as step #1 before commit & push
+  - Fixed stale test counts in AGENTS.md (300→288) to match current state
+  - Added missing `examples/` directory to README project structure tree
+
 - [2026-05-28] docs: audit and correct README.md for accuracy (files modified: README.md)
   - Fixed `--verbose` applies to: changed "all" → "analyze, audit, score, migrate" (history unsupported)
   - Fixed `--format` applies to: added "history" (supports json/table)

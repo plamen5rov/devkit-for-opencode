@@ -6,7 +6,7 @@
 
 ## Project State
 
-This is a **fully implemented Python toolkit** with 300 passing tests across all 9 phases.
+This is a **fully implemented Python toolkit** with 288 passing tests across all 9 phases.
 
 All core components are implemented:
 - 6 analyzer tools (config, permissions, agents, skills, MCP, commands)
@@ -58,7 +58,7 @@ The full protocol is in `AGENT.md`. Key rules:
 source .venv/bin/activate && pytest
 ```
 
-All 300 tests must pass. Add new tests for any new functionality.
+All 288 tests must pass. Add new tests for any new functionality.
 
 ### 4. Use knowledge/ as Reference Only
 
@@ -68,9 +68,10 @@ The `knowledge/` directory contains OpenCode documentation snapshots. These are 
 
 After every meaningful change, always:
 
-1. **Git commit & push** to the repository
-2. **Update DONE.md** with a changelog entry (date, description, files modified)
-3. **Update README.md** when the change affects user-facing instructions (new commands, changed workflows, new features)
+1. **Audit README.md** — verify every claim, CLI command, flag, code example, test count, and file path is accurate
+2. **Git commit & push** to the repository
+3. **Update DONE.md** with a changelog entry (date, description, files modified)
+4. **Update README.md** when the change affects user-facing instructions (new commands, changed workflows, new features)
 
 ---
 
@@ -87,7 +88,7 @@ devkit-for-opencode/
 │   ├── tasks/           # Workflow tasks (audit, security, token, migration)
 │   ├── tools/           # Core analyzer tools (6 total)
 │   └── __init__.py
-├── tests/               # 300 unit tests
+├── tests/               # 288 unit tests
 ├── examples/            # Example OpenCode configs (good, bad, minimal)
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)

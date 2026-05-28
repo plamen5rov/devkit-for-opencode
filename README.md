@@ -241,6 +241,7 @@ devkit-for-opencode/
 ├── api/                 # FastAPI backend with 7 route groups
 ├── web/                 # React + Vite + TypeScript + Tailwind frontend
 ├── tests/               # 288 unit tests
+├── examples/            # Example OpenCode configs (good, bad, minimal)
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)
 ├── output/              # Generated reports
