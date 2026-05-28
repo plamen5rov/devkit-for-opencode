@@ -64,6 +64,14 @@ All 300 tests must pass. Add new tests for any new functionality.
 
 The `knowledge/` directory contains OpenCode documentation snapshots. These are **read-only reference material** — do not modify them.
 
+### 5. Commit, Log, and Update Docs After Every Change
+
+After every meaningful change, always:
+
+1. **Git commit & push** to the repository
+2. **Update DONE.md** with a changelog entry (date, description, files modified)
+3. **Update README.md** when the change affects user-facing instructions (new commands, changed workflows, new features)
+
 ---
 
 ## Project Structure

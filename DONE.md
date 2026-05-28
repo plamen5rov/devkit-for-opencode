@@ -1,5 +1,16 @@
 # DONE.md — Changelog
 
+## Fixes & Improvements
+
+- [2026-05-28] fix: persist analysis history and analyze state, add start script (files modified: api/routes/analyze.py, api/routes/history.py, web/src/pages/Analyze.tsx, Makefile, start.sh)
+  - Save analysis results to SQLite history DB after each analyze run (fixes Dashboard "No analysis data")
+  - Fix route ordering: /trend before /{record_id} to prevent FastAPI 422 on Dashboard requests
+  - Persist Analyze page state via sessionStorage (configText, activeTab, result) — survives tab switches
+  - Move Issues/Warnings/Fix-Generate sections to bottom of page
+  - Add start.sh and Makefile: `make start` or `./start.sh` launches API + Vite in one terminal
+  - Makefile also has format, lint, test targets
+  - 288 tests passing
+
 ## Core Refactoring
 
 - [2026-05-28] refactor: remove unused CrewAI dependency and dead code (files modified: pyproject.toml, devkit/agents/*, devkit/tasks/full_audit.py, README.md, AGENTS.md, ARCHITECTURE.md, tests/*)

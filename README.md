@@ -66,6 +66,20 @@ devkit analyze --config-path ~/.config/opencode/opencode.json
 devkit analyze
 ```
 
+### Web UI
+
+DevKit includes a FastAPI + React web interface for analyzing configs via paste or file upload, with fix generation and health score trends.
+
+```bash
+# Start both servers with one command
+make start
+# or
+./start.sh
+
+# Web UI:    http://localhost:5173
+# API docs:  http://localhost:8000/docs
+```
+
 ## CLI Usage
 
 DevKit provides five commands via the `devkit` CLI:
