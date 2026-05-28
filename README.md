@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests: 300 passing](https://img.shields.io/badge/tests-300%20passing-brightgreen.svg)]()
+[![Tests: 288 passing](https://img.shields.io/badge/tests-288%20passing-brightgreen.svg)]()
 
 ## Overview
 
@@ -16,7 +16,8 @@ DevKit provides deep analysis of OpenCode configuration files (`opencode.json`).
 - Detects hardcoded secrets, overly permissive rules, and deprecated config fields
 - Tracks analysis history with SQLite-backed persistence
 - Generates JSON, Markdown, and HTML reports
-- Runs as a standalone CLI or inside OpenCode via TypeScript tools
+- Runs as a standalone CLI, web UI (FastAPI + React), or inside OpenCode via TypeScript tools
+- Web UI features: paste/upload configs, fix generation, health score trends, session persistence with "Clear All Data"
 
 **Who it's for:**
 - OpenCode users who want to validate their configuration
@@ -68,7 +69,14 @@ devkit analyze
 
 ### Web UI
 
-DevKit includes a FastAPI + React web interface for analyzing configs via paste or file upload, with fix generation and health score trends.
+DevKit includes a FastAPI + React web interface with:
+- **Analyze** — paste or upload configs, view health scores, get fix suggestions with copy-paste output
+- **Security Audit** — scan for hardcoded secrets, dangerous permissions, and anti-patterns
+- **Health Score** — detailed factor breakdown with charts and trends
+- **Migration Assistant** — detect deprecated fields and generate migrated configs
+- **History & Recommendations** — track analysis trends and manage suggestions
+- **Session persistence** — all tab state survives navigation; shared config input across tabs
+- **Clear All Data** — one-click reset in the header clears all session and history data
 
 ```bash
 # Start both servers with one command
@@ -239,12 +247,16 @@ devkit-for-opencode/
 │   ├── tasks/           # Workflow tasks (audit, security, token, migration)
 │   ├── tools/           # Core analyzer tools (6 total)
 │   └── __init__.py
-├── tests/               # 300 unit tests
+├── api/                 # FastAPI backend with 7 route groups
+├── web/                 # React + Vite + TypeScript + Tailwind frontend
+├── tests/               # 288 unit tests
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)
 ├── output/              # Generated reports
 ├── main.py              # Legacy entry point (use `devkit` CLI instead)
 ├── pyproject.toml       # Python package config
+├── Makefile             # start, format, lint, test targets
+├── start.sh             # One-command API + Vite launcher
 ├── AGENTS.md            # Agent quick-start guide
 ├── ARCHITECTURE.md      # System design
 ├── TODO.md              # Phased implementation roadmap
@@ -286,10 +298,16 @@ dependencies = [
 pip install -e ".[dev]"
 
 # Run tests
-pytest
+make test
 
-# Run with coverage
-pytest --cov=devkit --cov-report=term-missing
+# Type-check + lint
+make lint
+
+# Auto-format
+make format
+
+# Start both servers
+make start
 ```
 
 ### Adding New Tools
