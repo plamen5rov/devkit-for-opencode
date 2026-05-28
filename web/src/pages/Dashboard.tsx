@@ -21,7 +21,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, Shield, Zap } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, Shield, Zap, FileText, Clock, Lightbulb } from 'lucide-react'
 
 export function Dashboard() {
   const { data: historyData } = useQuery({
@@ -52,12 +52,42 @@ export function Dashboard() {
     }))
     .reverse()
 
+  const severityCounts = (() => {
+    const counts: Record<string, number> = { critical: 0, high: 0, medium: 0, low: 0, info: 0 }
+    latest?.findings?.forEach((f: any) => {
+      const s = (f.severity ?? '').toLowerCase()
+      if (s in counts) counts[s]++
+    })
+    return counts
+  })()
+
+  const severityColors: Record<string, string> = {
+    critical: 'bg-red-600',
+    high: 'bg-orange-500',
+    medium: 'bg-amber-500',
+    low: 'bg-blue-500',
+    info: 'bg-slate-400',
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground">Overview of your OpenCode configuration health</p>
       </div>
+
+      {latest && (
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <FileText className="h-3.5 w-3.5" />
+            <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{latest.config_path}</code>
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5" />
+            {new Date(latest.timestamp).toLocaleString()}
+          </span>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center justify-center gap-8">
         <ScoreGauge score={healthScore} label="Health Score" />
@@ -139,8 +169,27 @@ export function Dashboard() {
 
       {latest?.findings && latest.findings.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Findings</CardTitle>
+          <CardHeader className="pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle>Recent Findings</CardTitle>
+              <div className="flex items-center gap-2">
+                {Object.entries(severityCounts)
+                  .filter(([, count]) => count > 0)
+                  .map(([severity, count]) => (
+                    <span
+                      key={severity}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-white ${severityColors[severity]}`}
+                    >
+                      {severity === 'critical' && 'C'}
+                      {severity === 'high' && 'H'}
+                      {severity === 'medium' && 'M'}
+                      {severity === 'low' && 'L'}
+                      {severity === 'info' && 'I'}
+                      :&nbsp;{count}
+                    </span>
+                  ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
@@ -163,6 +212,42 @@ export function Dashboard() {
                 ))}
               </TableBody>
             </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {latest?.recommendations && latest.recommendations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+              Recommendations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {latest.recommendations.map((rec: any, i: number) => (
+                <div key={i} className="grid gap-1.5">
+                  <div className="flex items-start gap-2">
+                    <div
+                      className={`mt-0.5 h-2 w-2 rounded-full shrink-0 ${rec.priority <= 1 ? 'bg-red-500' : rec.priority === 2 ? 'bg-amber-500' : 'bg-blue-500'}`}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-snug">{rec.title}</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">{rec.description}</p>
+                      <div className="flex flex-wrap gap-2 mt-1.5">
+                        <span className="inline-flex items-center px-1.5 py-0.5 text-xs rounded bg-muted text-muted-foreground">
+                          Effort: {rec.effort}
+                        </span>
+                        <span className="inline-flex items-center px-1.5 py-0.5 text-xs rounded bg-muted text-muted-foreground">
+                          {rec.category}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}
