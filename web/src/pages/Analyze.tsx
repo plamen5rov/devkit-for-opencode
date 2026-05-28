@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { analyzeConfig, uploadConfig } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { SeverityBadge } from '@/components/SeverityBadge'
 import {
   Table,
@@ -16,14 +17,135 @@ import { ScoreGauge } from '@/components/ScoreGauge'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
-import { Upload, Play, Loader2, Clipboard } from 'lucide-react'
+import { Upload, Play, Loader2, Clipboard, Wrench, Check, Copy } from 'lucide-react'
 
 type TabType = 'upload' | 'paste'
+
+interface FixItem {
+  id: string
+  label: string
+  category: 'issue' | 'warning' | 'recommendation'
+  apply: (config: any) => any
+}
+
+function detectFixes(config: any, result: any): FixItem[] {
+  const fixes: FixItem[] = []
+  const issues = result?.orchestrator?.issues ?? []
+  const warnings = result?.orchestrator?.warnings ?? []
+  const perms = config?.permission ?? {}
+
+  // Missing catch-all
+  if (typeof perms === 'object' && !('*' in perms)) {
+    fixes.push({
+      id: 'catch-all',
+      label: 'Add catch-all permission rule ("*": "ask")',
+      category: 'issue',
+      apply: (c) => ({ ...c, permission: { ...c.permission, '*': 'ask' } }),
+    })
+  }
+
+  // Global bash allow
+  if (perms?.bash === 'allow') {
+    fixes.push({
+      id: 'bash-allow',
+      label: 'Restrict global bash permission (allow → ask)',
+      category: 'issue',
+      apply: (c) => ({ ...c, permission: { ...c.permission, bash: 'ask' } }),
+    })
+  }
+
+  // Global edit allow
+  if (perms?.edit === 'allow') {
+    fixes.push({
+      id: 'edit-allow',
+      label: 'Restrict global edit permission (allow → ask)',
+      category: 'warning',
+      apply: (c) => ({ ...c, permission: { ...c.permission, edit: 'ask' } }),
+    })
+  }
+
+  // Missing small_model
+  if (!config?.small_model) {
+    fixes.push({
+      id: 'small-model',
+      label: 'Add small_model for cost-efficient operations',
+      category: 'warning',
+      apply: (c) => ({ ...c, small_model: 'anthropic/claude-haiku-4-20250514' }),
+    })
+  }
+
+  // Missing $schema
+  if (!config?.['$schema']) {
+    fixes.push({
+      id: 'schema',
+      label: 'Add $schema reference for IDE support',
+      category: 'warning',
+      apply: (c) => ({ ...c, $schema: 'https://opencode.ai/config.json' }),
+    })
+  }
+
+  // Missing share config
+  if (!config?.share) {
+    fixes.push({
+      id: 'share',
+      label: 'Add share configuration (set to "manual")',
+      category: 'warning',
+      apply: (c) => ({ ...c, share: 'manual' }),
+    })
+  }
+
+  // Model without provider prefix
+  const model = config?.model ?? ''
+  if (model && typeof model === 'string' && !model.includes('/')) {
+    const prefix = model.toLowerCase().includes('claude') ? 'anthropic' :
+                   model.toLowerCase().includes('gpt') || model.toLowerCase().includes('o1') ? 'openai' :
+                   model.toLowerCase().includes('gemini') ? 'google' : 'anthropic'
+    fixes.push({
+      id: 'model-prefix',
+      label: `Add provider prefix to model ("${model}" → "${prefix}/${model}")`,
+      category: 'issue',
+      apply: (c) => ({ ...c, model: `${prefix}/${model}` }),
+    })
+  }
+
+  // Disabled MCP servers
+  const mcpServers = config?.mcp?.servers ?? {}
+  if (typeof mcpServers === 'object') {
+    for (const [name, server] of Object.entries(mcpServers)) {
+      if (typeof server === 'object' && !(server as any).enabled) {
+        fixes.push({
+          id: `mcp-${name}`,
+          label: `Remove disabled MCP server "${name}"`,
+          category: 'warning',
+          apply: (c) => {
+            const { [name]: _, ...rest } = c.mcp.servers
+            return { ...c, mcp: { ...c.mcp, servers: rest } }
+          },
+        })
+      }
+    }
+  }
+
+  return fixes
+}
+
+function applyFixes(config: any, selectedIds: Set<string>, fixes: FixItem[]): any {
+  let patched = { ...config }
+  for (const fix of fixes) {
+    if (selectedIds.has(fix.id)) {
+      patched = fix.apply(patched)
+    }
+  }
+  return patched
+}
 
 export function AnalyzePage() {
   const [configText, setConfigText] = useState('')
   const [activeTab, setActiveTab] = useState<TabType>('paste')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFixes, setSelectedFixes] = useState<Set<string>>(new Set())
+  const [fixedConfigText, setFixedConfigText] = useState('')
+  const [copied, setCopied] = useState(false)
 
   const analyzeMutation = useMutation({
     mutationFn: (content: string) => analyzeConfig(content),
@@ -42,6 +164,8 @@ export function AnalyzePage() {
 
   const handleRun = () => {
     if (configText.trim()) {
+      setSelectedFixes(new Set())
+      setFixedConfigText('')
       analyzeMutation.mutate(configText)
     }
   }
@@ -61,6 +185,56 @@ export function AnalyzePage() {
   const result = analyzeMutation.data?.data
   const summary = result?.orchestrator?.summary ?? {}
   const findings = result?.audit?.findings ?? []
+
+  const parsedConfig = useMemo(() => {
+    try {
+      return JSON.parse(configText)
+    } catch {
+      return null
+    }
+  }, [configText])
+
+  const fixes = useMemo(() => {
+    if (!parsedConfig || !result) return []
+    return detectFixes(parsedConfig, result)
+  }, [parsedConfig, result])
+
+  const fixableCount = fixes.length
+
+  const handleToggleFix = useCallback((id: string) => {
+    setSelectedFixes((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const handleFixAll = useCallback(() => {
+    if (selectedFixes.size === fixableCount) {
+      setSelectedFixes(new Set())
+    } else {
+      setSelectedFixes(new Set(fixes.map((f) => f.id)))
+    }
+  }, [fixes, fixableCount, selectedFixes.size])
+
+  const handleGenerateFixed = useCallback(() => {
+    if (!parsedConfig || fixes.length === 0) return
+    const patched = applyFixes(parsedConfig, selectedFixes, fixes)
+    setFixedConfigText(JSON.stringify(patched, null, 2))
+  }, [parsedConfig, selectedFixes, fixes])
+
+  const handleCopyFixed = useCallback(() => {
+    navigator.clipboard.writeText(fixedConfigText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [fixedConfigText])
+
+  const issueFixes = fixes.filter((f) => f.category === 'issue')
+  const warningFixes = fixes.filter((f) => f.category === 'warning')
 
   return (
     <div className="space-y-6">
@@ -165,17 +339,30 @@ export function AnalyzePage() {
             </div>
           </div>
 
-          {result.orchestrator?.issues && result.orchestrator.issues.length > 0 && (
-            <Card className="border-destructive/50">
+          {issueFixes.length > 0 && (
+            <Card className="border-red-500/60 bg-red-500/5 dark:bg-red-500/10">
               <CardHeader>
-                <CardTitle className="text-destructive">Issues ({result.orchestrator.issues.length})</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-red-500">
+                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                  Issues ({issueFixes.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  {result.orchestrator.issues.map((issue: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-destructive" />
-                      <span>{issue}</span>
+                <ul className="space-y-3">
+                  {issueFixes.map((fix) => (
+                    <li key={fix.id} className="flex items-start gap-3">
+                      <Checkbox
+                        id={`fix-${fix.id}`}
+                        checked={selectedFixes.has(fix.id)}
+                        onCheckedChange={() => handleToggleFix(fix.id)}
+                        className="mt-0.5 border-red-400 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+                      />
+                      <label
+                        htmlFor={`fix-${fix.id}`}
+                        className="cursor-pointer text-sm leading-relaxed"
+                      >
+                        {fix.label}
+                      </label>
                     </li>
                   ))}
                 </ul>
@@ -183,20 +370,90 @@ export function AnalyzePage() {
             </Card>
           )}
 
-          {result.orchestrator?.warnings && result.orchestrator.warnings.length > 0 && (
-            <Card className="border-yellow-500/50">
+          {warningFixes.length > 0 && (
+            <Card className="border-yellow-500/60 bg-yellow-500/5 dark:bg-yellow-500/10">
               <CardHeader>
-                <CardTitle className="text-yellow-500">Warnings ({result.orchestrator.warnings.length})</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-yellow-500">
+                  <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                  Warnings ({warningFixes.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  {result.orchestrator.warnings.map((warning: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-yellow-500" />
-                      <span>{warning}</span>
+                <ul className="space-y-3">
+                  {warningFixes.map((fix) => (
+                    <li key={fix.id} className="flex items-start gap-3">
+                      <Checkbox
+                        id={`fix-${fix.id}`}
+                        checked={selectedFixes.has(fix.id)}
+                        onCheckedChange={() => handleToggleFix(fix.id)}
+                        className="mt-0.5 border-yellow-400 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+                      />
+                      <label
+                        htmlFor={`fix-${fix.id}`}
+                        className="cursor-pointer text-sm leading-relaxed"
+                      >
+                        {fix.label}
+                      </label>
                     </li>
                   ))}
                 </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {fixableCount > 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleFixAll}
+                  >
+                    {selectedFixes.size === fixableCount ? 'Deselect All' : 'Fix All'}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {selectedFixes.size} of {fixableCount} selected
+                  </span>
+                  <Button
+                    onClick={handleGenerateFixed}
+                    disabled={selectedFixes.size === 0}
+                    className="ml-auto"
+                  >
+                    <Wrench className="mr-2 h-4 w-4" />
+                    Generate Fixed Config
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {fixedConfigText && (
+            <Card className="border-green-500/60">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2 text-green-500">
+                    <Check className="h-5 w-5" />
+                    Fixed Configuration
+                  </span>
+                  <Button variant="outline" size="sm" onClick={handleCopyFixed}>
+                    {copied ? (
+                      <><Check className="mr-2 h-4 w-4" /> Copied!</>
+                    ) : (
+                      <><Copy className="mr-2 h-4 w-4" /> Copy</>
+                    )}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CodeMirror
+                  value={fixedConfigText}
+                  height="400px"
+                  extensions={[json()]}
+                  theme={vscodeDark}
+                  basicSetup={{ lineNumbers: true, foldGutter: true }}
+                  editable={false}
+                />
               </CardContent>
             </Card>
           )}
