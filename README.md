@@ -4,11 +4,11 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests: 256 passing](https://img.shields.io/badge/tests-256%20passing-brightgreen.svg)]()
+[![Tests: 300 passing](https://img.shields.io/badge/tests-300%20passing-brightgreen.svg)]()
 
 ## Overview
 
-DevKit is a CrewAI-based toolkit that provides deep analysis of OpenCode configuration files (`opencode.json`). It detects security issues, anti-patterns, token inefficiencies, and migration needs — then generates actionable recommendations with health and risk scores.
+DevKit provides deep analysis of OpenCode configuration files (`opencode.json`). It detects security issues, anti-patterns, token inefficiencies, and migration needs — then generates actionable recommendations with health and risk scores.
 
 **What it does:**
 - Analyzes permissions, agents, skills, MCP servers, commands, and config structure
@@ -179,12 +179,12 @@ Example `.opencode/opencode.json` configuration:
 
 ## Architecture
 
-DevKit is built around three CrewAI primitives:
+DevKit is built around a pipeline of stateless analyzer tools that return structured results:
 
-| Primitive | Count | Purpose |
+| Component | Count | Purpose |
 |-----------|-------|---------|
 | **Tools** | 6 | Config reader, permission analyzer, agent/skill/MCP/command analyzers |
-| **Agents** | 3 | Orchestrator, Config Auditor, Optimization Advisor |
+| **Agents** | 3 | Orchestrator, Config Auditor, Optimization Advisor (coordinate analyzers) |
 | **Tasks** | 4 | Full audit, security scan, token optimization, migration assistant |
 
 ### Analysis Pipeline
@@ -194,7 +194,7 @@ Config File → Config Reader → Permission Analyzer → Agent Analyzer
                                     ↓
                               Skill Analyzer → MCP Analyzer → Command Analyzer
                                     ↓
-                              Orchestrator Agent → Summary + Health Score
+                              Orchestrator → Summary + Health Score
                                     ↓
                               Config Auditor → Security Findings
                                     ↓
@@ -217,7 +217,7 @@ Config File → Config Reader → Permission Analyzer → Agent Analyzer
 ```
 devkit-for-opencode/
 ├── devkit/
-│   ├── agents/          # CrewAI agents (orchestrator, auditor, advisor)
+│   ├── agents/          # Agent wrappers (orchestrator, auditor, advisor)
 │   ├── cli.py           # CLI entry point with argparse subcommands
 │   ├── configs/         # Configuration files
 │   ├── memory/          # SQLite-backed history store and recommendation tracker
@@ -225,7 +225,7 @@ devkit-for-opencode/
 │   ├── tasks/           # Workflow tasks (audit, security, token, migration)
 │   ├── tools/           # Core analyzer tools (6 total)
 │   └── __init__.py
-├── tests/               # 256 unit tests
+├── tests/               # 300 unit tests
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)
 ├── output/              # Generated reports
@@ -243,10 +243,7 @@ devkit-for-opencode/
 
 | Variable | Purpose | Required |
 |----------|---------|----------|
-| `OPENAI_API_KEY` | OpenAI API key (for CrewAI agents) | No* |
-| `ANTHROPIC_API_KEY` | Anthropic API key (for CrewAI agents) | No* |
-
-*CrewAI agents require an LLM provider. Set the appropriate API key for your configured model.
+| (none) | DevKit runs purely as a local analyzer — no LLM API keys needed | No |
 
 ### Python Package
 
@@ -256,11 +253,13 @@ name = "devkit-for-opencode"
 version = "0.1.0"
 requires-python = ">=3.10"
 dependencies = [
-    "crewai>=0.80.0",
-    "crewai-tools>=0.20.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0",
     "jsonschema>=4.20.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.0.0",
 ]
 ```
 
@@ -312,11 +311,11 @@ devkit audit --format markdown
 |-------|--------|-------------|
 | 1. Infrastructure | ✅ Done | Python scaffolding, test infrastructure |
 | 2. Core Tools | ✅ Done | 6 analyzers with 83 tests |
-| 3. Core Agents | ✅ Done | 3 CrewAI agents with 43 tests |
+| 3. Agent Wrappers | ✅ Done | 3 agent wrappers (orchestrator, auditor, advisor) with 43 tests |
 | 4. Tasks & Workflows | ✅ Done | 4 workflow tasks with 60 tests |
 | 5. OpenCode Tools | ✅ Done | 3 TypeScript tools |
 | 6. Memory & Persistence | ✅ Done | SQLite history + recommendation tracker (26 tests) |
-| 7. CLI & UI | ✅ Done | CLI with 5 commands + report generator (42 tests) |
+| 7. CLI & UI | ✅ Done | CLI with 5 commands + FastAPI + React web UI (42 tests) |
 | 8. Documentation | 🚧 In Progress | README, examples, AGENTS.md update |
 | 9. Advanced Features | ✅ Done | Multi-agent orchestration, auto-remediation, plugin system |
 
@@ -326,4 +325,4 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ## Credits
 
-Built on [CrewAI](https://github.com/crewAIInc/crewAI) for agent orchestration and [OpenCode](https://opencode.ai) for configuration analysis.
+Built on [OpenCode](https://opencode.ai) for configuration analysis.

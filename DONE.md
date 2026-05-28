@@ -1,5 +1,16 @@
 # DONE.md — Changelog
 
+## Core Refactoring
+
+- [2026-05-28] refactor: remove unused CrewAI dependency and dead code (files modified: pyproject.toml, devkit/agents/*, devkit/tasks/full_audit.py, README.md, AGENTS.md, ARCHITECTURE.md, tests/*)
+  - Remove crewai and crewai-tools from dependencies
+  - Strip CrewAI imports from all agent wrappers (orchestrator, auditor, advisor, multi_agent)
+  - Remove create_crew_audit from full_audit.py (was never called)
+  - Update all documentation to remove CrewAI references
+  - Remove tests for deleted CrewAI agent/task creation functions
+  - All analysis is purely programmatic — no LLM calls required
+  - 288 tests passing
+
 ## Web UI Integration
 
 - [2026-05-28] refactor(analyze): remove path option, paste/upload only (files modified: api/routes/analyze.py, api/routes/config.py, api/schemas.py, web/src/lib/api.ts, web/src/pages/Analyze.tsx)

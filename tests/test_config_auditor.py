@@ -223,24 +223,3 @@ def test_audit_best_practices_missing_share(tmp_path: Path) -> None:
         f.severity == Severity.INFO and "share" in f.message.lower()
         for f in result.findings
     )
-
-
-def test_config_auditor_agent_creation() -> None:
-    """Test creating the config auditor CrewAI agent."""
-    from devkit.agents.config_auditor import create_config_auditor_agent
-    agent = create_config_auditor_agent()
-    assert agent.role == "OpenCode Configuration Auditor"
-
-
-def test_audit_task_creation(tmp_path: Path) -> None:
-    """Test creating the audit task."""
-    from devkit.agents.config_auditor import (
-        create_config_auditor_agent,
-        create_audit_task,
-    )
-    agent = create_config_auditor_agent()
-    config_file = tmp_path / "opencode.json"
-    config_file.write_text("{}")
-    task = create_audit_task(agent, str(config_file))
-    assert task.agent == agent
-    assert "Audit" in task.description

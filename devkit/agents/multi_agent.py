@@ -1,7 +1,7 @@
-"""Multi-Agent Orchestration — CrewAI crew with agent delegation.
+"""Multi-Agent Orchestration — Aggregates results from all analyzers.
 
-Implements a crew where the Orchestrator delegates to Config Auditor
-and Optimization Advisor, then aggregates results into a unified report.
+Runs orchestrator, auditor, and advisor, then aggregates findings
+into a unified report with health and risk scores.
 """
 
 from __future__ import annotations
@@ -9,8 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
-
-from crewai import Agent, Crew, Process, Task
 
 from devkit.agents.config_auditor import AuditResult, run_audit
 from devkit.agents.optimization_advisor import OptimizationResult, run_optimization
@@ -67,58 +65,6 @@ class MultiAgentReport:
         return "\n".join(lines)
 
 
-def create_orchestrator_agent(
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-) -> Agent:
-    """Create the orchestrator agent that delegates to others."""
-    return Agent(
-        role="Analysis Orchestrator",
-        goal="Coordinate multi-agent analysis and aggregate results",
-        backstory=(
-            "You coordinate a team of specialized analysts. You delegate "
-            "work to the Config Auditor and Optimization Advisor, then "
-            "combine their findings into a unified report."
-        ),
-        verbose=verbose,
-        allow_delegation=True,
-    )
-
-
-def create_auditor_agent(
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-) -> Agent:
-    """Create the config auditor agent."""
-    return Agent(
-        role="Config Auditor",
-        goal="Validate OpenCode configurations for errors and security issues",
-        backstory=(
-            "You are a security-focused analyst specializing in OpenCode "
-            "configuration validation."
-        ),
-        verbose=verbose,
-        allow_delegation=False,
-    )
-
-
-def create_advisor_agent(
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-) -> Agent:
-    """Create the optimization advisor agent."""
-    return Agent(
-        role="Optimization Advisor",
-        goal="Suggest improvements to reduce token usage and improve configuration",
-        backstory=(
-            "You analyze OpenCode configurations for optimization opportunities "
-            "in permissions, agents, MCP servers, and skills."
-        ),
-        verbose=verbose,
-        allow_delegation=False,
-    )
-
-
 def run_multi_agent_analysis(
     config_path: str,
     project_root: Optional[Path] = None,
@@ -131,9 +77,9 @@ def run_multi_agent_analysis(
     Args:
         config_path: Path to the OpenCode config file.
         project_root: Project root for local discovery.
-        model: LLM model to use.
+        model: LLM model to use (kept for API compatibility).
         verbose: Enable verbose output.
-        process: Crew process type (sequential, hierarchical).
+        process: Process type (kept for API compatibility).
 
     Returns:
         MultiAgentReport with aggregated results.
@@ -158,74 +104,6 @@ def run_multi_agent_analysis(
     report.risk_score = _calculate_multi_agent_risk(report)
 
     return report
-
-
-def create_multi_agent_crew(
-    config_path: str,
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-    process: str = "sequential",
-) -> Crew:
-    """Create a CrewAI crew for multi-agent analysis.
-
-    Args:
-        config_path: Path to the OpenCode config file.
-        model: LLM model to use.
-        verbose: Enable verbose output.
-        process: Crew process type.
-
-    Returns:
-        CrewAI Crew ready for execution.
-    """
-    orchestrator = create_orchestrator_agent(model=model, verbose=verbose)
-    auditor = create_auditor_agent(model=model, verbose=verbose)
-    advisor = create_advisor_agent(model=model, verbose=verbose)
-
-    # Orchestrator task
-    orchestrator_task = Task(
-        description=(
-            f"Coordinate analysis of {config_path}. "
-            "Delegate to the Config Auditor for security validation "
-            "and the Optimization Advisor for improvement suggestions. "
-            "Aggregate all findings into a unified report."
-        ),
-        expected_output="Unified analysis report with health and risk scores",
-        agent=orchestrator,
-    )
-
-    # Auditor task
-    auditor_task = Task(
-        description=(
-            f"Audit {config_path} for errors, security issues, and anti-patterns. "
-            "Report findings with severity levels."
-        ),
-        expected_output="JSON audit report with findings by severity",
-        agent=auditor,
-    )
-
-    # Advisor task
-    advisor_task = Task(
-        description=(
-            f"Analyze {config_path} for optimization opportunities. "
-            "Suggest improvements for permissions, agents, MCP servers, and skills."
-        ),
-        expected_output="JSON optimization report with prioritized recommendations",
-        agent=advisor,
-    )
-
-    process_type = Process.sequential if process == "sequential" else Process.hierarchical
-
-    crew_kwargs = {
-        "agents": [orchestrator, auditor, advisor],
-        "tasks": [auditor_task, advisor_task, orchestrator_task],
-        "process": process_type,
-        "verbose": verbose,
-    }
-
-    if process_type == Process.hierarchical:
-        crew_kwargs["manager_llm"] = model
-
-    return Crew(**crew_kwargs)
 
 
 def _aggregate_findings(report: MultiAgentReport) -> list[dict[str, Any]]:

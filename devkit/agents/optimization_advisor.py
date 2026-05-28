@@ -1,17 +1,13 @@
 """Optimization Advisor Agent — Suggests config improvements.
 
-Role: Analyze config and suggest optimizations (token reduction, model selection,
-permission tightening).
-Tools: All Phase 2 tools + MCP analyzer.
-Output: Prioritized recommendations with rationale and before/after comparison.
+Analyzes config and suggests optimizations for token reduction, model selection,
+and permission tightening.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Optional
-
-from crewai import Agent, Task
 
 from devkit.tools.agent_analyzer import analyze_agents
 from devkit.tools.config_reader import read_config
@@ -61,41 +57,6 @@ class OptimizationResult:
             "total_recommendations": len(self.recommendations),
             "total_estimated_savings": self.total_estimated_savings,
         }
-
-
-def create_optimization_advisor_agent(
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-) -> Agent:
-    """Create the optimization advisor CrewAI agent."""
-    return Agent(
-        role="OpenCode Optimization Advisor",
-        goal="Suggest improvements for token usage, model selection, and permission tightening",
-        backstory=(
-            "You are a performance expert focused on reducing context costs, "
-            "optimizing model selection, and tightening permissions in OpenCode "
-            "configurations. You provide actionable recommendations with clear "
-            "before/after comparisons."
-        ),
-        verbose=verbose,
-        allow_delegation=False,
-    )
-
-
-def create_optimization_task(
-    agent: Agent,
-    config_path: str,
-) -> Task:
-    """Create the optimization task."""
-    return Task(
-        description=(
-            f"Analyze the OpenCode configuration at {config_path} for optimization "
-            "opportunities. Suggest improvements for token usage, model selection, "
-            "and permission tightening."
-        ),
-        expected_output="JSON report with prioritized recommendations",
-        agent=agent,
-    )
 
 
 def run_optimization(

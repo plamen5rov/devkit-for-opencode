@@ -1,8 +1,6 @@
-"""Config Audit Agent — Specialized config validation agent.
+"""Config Audit Agent — Validates OpenCode configs for errors, anti-patterns, security issues.
 
-Role: Validate OpenCode configs for errors, anti-patterns, security issues.
-Tools: config reader, permission analyzer, agent analyzer.
-Output: Audit report with severity levels (error, warning, info).
+Runs permission, agent, and security analyzers, then categorizes findings by severity.
 """
 
 from __future__ import annotations
@@ -11,8 +9,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional
-
-from crewai import Agent, Task
 
 from devkit.tools.agent_analyzer import analyze_agents
 from devkit.tools.config_reader import read_config
@@ -66,39 +62,6 @@ class AuditResult:
             "info_count": self.info_count,
             "total_findings": len(self.findings),
         }
-
-
-def create_config_auditor_agent(
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-) -> Agent:
-    """Create the config auditor CrewAI agent."""
-    return Agent(
-        role="OpenCode Configuration Auditor",
-        goal="Validate OpenCode configurations for errors, anti-patterns, and security issues",
-        backstory=(
-            "You are a security-focused analyst specializing in OpenCode "
-            "configuration validation. You identify misconfigurations, "
-            "security risks, and anti-patterns in OpenCode configs."
-        ),
-        verbose=verbose,
-        allow_delegation=False,
-    )
-
-
-def create_audit_task(
-    agent: Agent,
-    config_path: str,
-) -> Task:
-    """Create the audit task."""
-    return Task(
-        description=(
-            f"Audit the OpenCode configuration at {config_path}. "
-            "Check for errors, security issues, and anti-patterns."
-        ),
-        expected_output="JSON audit report with findings by severity",
-        agent=agent,
-    )
 
 
 def run_audit(

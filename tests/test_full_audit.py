@@ -195,9 +195,3 @@ def test_full_audit_raw_analyses(valid_config_file: Path) -> None:
     assert "skills" in raw
     assert "mcp_servers" in raw
     assert "commands" in raw
-
-
-def test_crew_audit_import() -> None:
-    """Test crew audit function can be imported."""
-    from devkit.tasks.full_audit import create_crew_audit
-    assert callable(create_crew_audit)

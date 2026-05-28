@@ -12,10 +12,6 @@ import pytest
 from devkit.agents.config_auditor import AuditFinding, AuditResult, Severity
 from devkit.agents.multi_agent import (
     MultiAgentReport,
-    create_advisor_agent,
-    create_auditor_agent,
-    create_multi_agent_crew,
-    create_orchestrator_agent,
     run_multi_agent_analysis,
 )
 from devkit.agents.optimization_advisor import OptimizationResult, Recommendation
@@ -118,40 +114,6 @@ def test_multi_agent_report_to_markdown():
     assert "**Risk Score:** 90/100" in md
     assert "Test" in md
     assert "Optimize" in md
-
-
-def test_create_orchestrator_agent():
-    """Test creating orchestrator agent."""
-    agent = create_orchestrator_agent()
-    assert agent.role == "Analysis Orchestrator"
-    assert agent.allow_delegation is True
-
-
-def test_create_auditor_agent():
-    """Test creating auditor agent."""
-    agent = create_auditor_agent()
-    assert agent.role == "Config Auditor"
-    assert agent.allow_delegation is False
-
-
-def test_create_advisor_agent():
-    """Test creating advisor agent."""
-    agent = create_advisor_agent()
-    assert agent.role == "Optimization Advisor"
-    assert agent.allow_delegation is False
-
-
-def test_create_multi_agent_crew():
-    """Test creating multi-agent crew."""
-    crew = create_multi_agent_crew("/test.json")
-    assert len(crew.agents) == 3
-    assert len(crew.tasks) == 3
-
-
-def test_create_multi_agent_crew_hierarchical():
-    """Test creating crew with hierarchical process."""
-    crew = create_multi_agent_crew("/test.json", process="hierarchical")
-    assert len(crew.agents) == 3
 
 
 def test_aggregate_findings():

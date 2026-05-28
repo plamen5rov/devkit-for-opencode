@@ -6,11 +6,11 @@
 
 ## Project State
 
-This is a **fully implemented CrewAI-based toolkit** with 300 passing tests across all 9 phases.
+This is a **fully implemented Python toolkit** with 300 passing tests across all 9 phases.
 
 All core components are implemented:
 - 6 analyzer tools (config, permissions, agents, skills, MCP, commands)
-- 3 CrewAI agents (orchestrator, auditor, advisor) + multi-agent orchestration
+- 3 agent wrappers (orchestrator, auditor, advisor) + multi-agent orchestration
 - 4 workflow tasks (audit, security, token, migration) + auto-remediation
 - Memory layer with SQLite-backed history and recommendation tracking
 - CLI with 5 commands and report generator (JSON/Markdown/HTML)
@@ -21,9 +21,9 @@ All core components are implemented:
 
 ## Core Primitives
 
-The system is built around three CrewAI concepts:
+The system is built around stateless analyzer tools coordinated by agent wrappers:
 
-| Primitive | Location | Purpose |
+| Component | Location | Purpose |
 |-----------|----------|---------|
 | Tools | `devkit/tools/` | 6 analyzers for config, permissions, agents, skills, MCP, commands |
 | Agents | `devkit/agents/` | Orchestrator, Config Auditor, Optimization Advisor |
@@ -58,7 +58,7 @@ The full protocol is in `AGENT.md`. Key rules:
 source .venv/bin/activate && pytest
 ```
 
-All 256 tests must pass. Add new tests for any new functionality.
+All 300 tests must pass. Add new tests for any new functionality.
 
 ### 4. Use knowledge/ as Reference Only
 
@@ -71,7 +71,7 @@ The `knowledge/` directory contains OpenCode documentation snapshots. These are 
 ```
 devkit-for-opencode/
 ├── devkit/
-│   ├── agents/          # CrewAI agents (orchestrator, auditor, advisor)
+│   ├── agents/          # Agent wrappers (orchestrator, auditor, advisor)
 │   ├── cli.py           # CLI entry point with argparse subcommands
 │   ├── configs/         # Configuration files
 │   ├── memory/          # SQLite-backed history store and recommendation tracker
@@ -79,7 +79,7 @@ devkit-for-opencode/
 │   ├── tasks/           # Workflow tasks (audit, security, token, migration)
 │   ├── tools/           # Core analyzer tools (6 total)
 │   └── __init__.py
-├── tests/               # 256 unit tests
+├── tests/               # 300 unit tests
 ├── examples/            # Example OpenCode configs (good, bad, minimal)
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)

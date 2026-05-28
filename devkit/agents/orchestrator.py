@@ -1,8 +1,7 @@
-"""DevKit Orchestrator Agent — Primary agent that coordinates all analysis.
+"""DevKit Orchestrator Agent — Coordinates all analysis.
 
-Role: OpenCode Configuration Orchestrator
-Coordinates config reading, permission analysis, agent analysis,
-skill discovery, MCP analysis, and command analysis into a unified report.
+Reads config, runs permission/agent/skill/MCP/command analyzers,
+and produces a unified report with health score.
 """
 
 from __future__ import annotations
@@ -10,8 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
-
-from crewai import Agent, Crew, Task
 
 from devkit.tools.agent_analyzer import analyze_agents
 from devkit.tools.command_analyzer import analyze_commands
@@ -51,40 +48,6 @@ class OrchestratorResult:
         }
 
 
-def create_orchestrator_agent(
-    model: str = "anthropic/claude-sonnet-4-20250514",
-    verbose: bool = False,
-) -> Agent:
-    """Create the orchestrator CrewAI agent."""
-    return Agent(
-        role="OpenCode Configuration Orchestrator",
-        goal="Coordinate comprehensive analysis of OpenCode configurations across all dimensions",
-        backstory=(
-            "You are an expert in OpenCode configuration, permissions, agents, "
-            "tools, skills, MCP servers, and commands. You coordinate analysis "
-            "across all these dimensions and produce unified reports."
-        ),
-        verbose=verbose,
-        allow_delegation=False,
-    )
-
-
-def create_analysis_task(
-    agent: Agent,
-    config_path: str,
-    config: dict[str, Any],
-) -> Task:
-    """Create the analysis task for the orchestrator."""
-    return Task(
-        description=(
-            f"Analyze the OpenCode configuration at {config_path}. "
-            f"Run all analyzers and produce a unified report."
-        ),
-        expected_output="JSON report with all analysis sections",
-        agent=agent,
-    )
-
-
 def run_orchestration(
     config_path: str,
     project_root: Optional[Path] = None,
@@ -96,7 +59,7 @@ def run_orchestration(
     Args:
         config_path: Path to the OpenCode config file.
         project_root: Project root for local skill/command discovery.
-        model: LLM model to use.
+        model: LLM model to use (kept for API compatibility).
         verbose: Enable verbose output.
 
     Returns:

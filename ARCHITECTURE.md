@@ -2,19 +2,19 @@
 
 ## System Overview
 
-DevKit for OpenCode is a modular AI-assisted development layer designed to structure how agents, tasks, and tools are composed and executed inside OpenCode.
+DevKit for OpenCode is a modular toolkit for analyzing, auditing, and optimizing OpenCode configurations.
 
-It does not replace the runtime environment. It defines how intelligence is organized.
+It provides stateless analyzer tools that return structured results, coordinated by thin agent wrappers that orchestrate the analysis pipeline.
 
 ---
 
 ## Core Design Principle
 
-The system is built around three primitives:
+The system is built around stateless analyzers with no internal state:
 
-- **Agents** → decision-making units (defined in AGENT.md)
-- **Tasks** → atomic units of execution
-- **Tools** → reusable functional capabilities
+- **Tools** → reusable analysis functions (config reader, permission analyzer, etc.)
+- **Agents** → thin wrappers that coordinate multiple tools (orchestrator, auditor, advisor)
+- **Tasks** → workflow compositions of agents (full audit, security scan, token optimization, migration)
 
 Everything else is derived from these three.
 
@@ -22,86 +22,68 @@ Everything else is derived from these three.
 
 ## High-Level Architecture
 
-User Request
-↓
-OpenCode Runtime
-↓
-Agent Layer (AGENT.md)
-↓
-Task Planner (TASKS.md)
-↓
-Tool Execution Layer
-↓
-Structured Output
+```
+Config File → Config Reader → Permission Analyzer → Agent Analyzer
+                                    ↓
+                              Skill Analyzer → MCP Analyzer → Command Analyzer
+                                    ↓
+                              Orchestrator → Summary + Health Score
+                                    ↓
+                              Config Auditor → Security Findings
+                                    ↓
+                              Optimization Advisor → Recommendations
+```
 
 ---
 
 ## Component Responsibilities
 
-### 1. Agents (Behavior Layer)
+### 1. Tools (Capability Layer)
 
-- Interpret intent
-- Break down goals into tasks
-- Decide execution strategy
-- Enforce constraints from AGENT.md
-
----
-
-### 2. Tasks (Execution Layer)
-
-- Atomic and independent units of work
-- Must have:
-  - clear input
-  - clear output
-  - success criteria
-- No hidden logic or implicit behavior
-
----
-
-### 3. Tools (Capability Layer)
-
-- Stateless functions where possible
-- Reusable across tasks and agents
+- Stateless functions that analyze one aspect of the config
+- Return structured results (dataclasses with to_dict())
+- Reusable across agents and tasks
 - Must not contain orchestration logic
+
+### 2. Agents (Orchestration Layer)
+
+- Coordinate multiple tools into a unified result
+- Calculate scores, build summaries
+- No LLM calls — purely programmatic
+
+### 3. Tasks (Workflow Layer)
+
+- Compose agents into end-to-end pipelines
+- Generate reports (JSON, Markdown, HTML)
+- Support multiple output formats
 
 ---
 
 ## Context Flow Rules
 
-- Context must always be **minimal and task-relevant**
-- No global memory unless explicitly required
-- Long outputs must be summarized before passing forward
-- Prefer structured formats (JSON/YAML) over natural language
+- Tools receive only what they need (config dict, project root)
+- Results are structured dataclasses, not free text
+- Agents aggregate tool results into unified reports
+- Tasks compose agents and generate output
 
 ---
 
 ## Task Execution Model
 
-1. Agent receives request
-2. Agent decomposes into tasks
-3. Tasks are executed independently
-4. Results are aggregated
-5. Final output is structured and validated
-
----
-
-## Scalability Model
-
-The system is designed to evolve in layers:
-
-- Phase 1: Static tasks + manual execution
-- Phase 2: Agent-driven task orchestration
-- Phase 3: Tool auto-discovery and reuse
-- Phase 4: Multi-agent collaboration graph
+1. Task receives config path
+2. Task calls agent wrappers (orchestrator, auditor, advisor)
+3. Each agent runs its tool pipeline
+4. Results are aggregated into a report
+5. Report is returned in requested format (JSON/Markdown/HTML)
 
 ---
 
 ## Constraints
 
-- No task should depend on hidden global state
+- No tool should depend on hidden global state
 - No circular dependencies between agents
 - Tools must remain deterministic
-- Architecture must remain framework-agnostic
+- No LLM calls required — all analysis is programmatic
 
 ---
 

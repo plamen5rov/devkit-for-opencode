@@ -270,26 +270,3 @@ def test_recommendations_sorted_by_priority() -> None:
         assert priorities == sorted(priorities)
     finally:
         path.unlink()
-
-
-def test_optimization_advisor_agent_creation() -> None:
-    """Test creating the optimization advisor CrewAI agent."""
-    from devkit.agents.optimization_advisor import (
-        create_optimization_advisor_agent,
-    )
-    agent = create_optimization_advisor_agent()
-    assert agent.role == "OpenCode Optimization Advisor"
-
-
-def test_optimization_task_creation(tmp_path: Path) -> None:
-    """Test creating the optimization task."""
-    from devkit.agents.optimization_advisor import (
-        create_optimization_advisor_agent,
-        create_optimization_task,
-    )
-    agent = create_optimization_advisor_agent()
-    config_file = tmp_path / "opencode.json"
-    config_file.write_text("{}")
-    task = create_optimization_task(agent, str(config_file))
-    assert task.agent == agent
-    assert "optimization" in task.description.lower()

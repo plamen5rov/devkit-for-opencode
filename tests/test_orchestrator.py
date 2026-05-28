@@ -185,23 +185,3 @@ def test_to_dict_serialization(valid_config_file: Path) -> None:
     assert "summary" in d
     assert "issues" in d
     assert "warnings" in d
-
-
-def test_orchestrator_agent_creation() -> None:
-    """Test creating the orchestrator CrewAI agent."""
-    from devkit.agents.orchestrator import create_orchestrator_agent
-    agent = create_orchestrator_agent(verbose=False)
-    assert agent.role == "OpenCode Configuration Orchestrator"
-    assert agent.allow_delegation is False
-
-
-def test_analysis_task_creation(valid_config_file: Path) -> None:
-    """Test creating the analysis task."""
-    from devkit.agents.orchestrator import (
-        create_orchestrator_agent,
-        create_analysis_task,
-    )
-    agent = create_orchestrator_agent()
-    task = create_analysis_task(agent, str(valid_config_file), {})
-    assert task.agent == agent
-    assert "Analyze" in task.description

@@ -13,8 +13,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-from crewai import Crew, Process, Task
-
 from devkit.agents.config_auditor import AuditResult, run_audit
 from devkit.agents.optimization_advisor import OptimizationResult, run_optimization
 from devkit.agents.orchestrator import OrchestratorResult, run_orchestration
@@ -225,45 +223,3 @@ def save_report(report: FullAuditReport, output_dir: Optional[Path] = None) -> t
     )
 
     return json_path, md_path
-
-
-def create_crew_audit(
-    config_path: str,
-    project_root: Optional[Path] = None,
-    verbose: bool = False,
-) -> FullAuditReport:
-    """Run audit using CrewAI crew with agent delegation.
-
-    Args:
-        config_path: Path to the OpenCode config file.
-        project_root: Project root for local discovery.
-        verbose: Enable verbose output.
-
-    Returns:
-        FullAuditReport with all analysis sections.
-    """
-    from devkit.agents.config_auditor import create_config_auditor_agent
-    from devkit.agents.optimization_advisor import create_optimization_advisor_agent
-    from devkit.agents.orchestrator import create_orchestrator_agent, create_analysis_task
-
-    # Create agents
-    orchestrator = create_orchestrator_agent(verbose=verbose)
-    auditor = create_config_auditor_agent(verbose=verbose)
-    advisor = create_optimization_advisor_agent(verbose=verbose)
-
-    # Create tasks
-    orchestration_task = create_analysis_task(orchestrator, config_path, {})
-
-    # Run crew (sequential process)
-    crew = Crew(
-        agents=[orchestrator, auditor, advisor],
-        tasks=[orchestration_task],
-        process=Process.sequential,
-        verbose=verbose,
-    )
-
-    # Execute crew
-    crew.kickoff()
-
-    # Run programmatic analysis (crew handles LLM-based reasoning)
-    return create_full_audit_task(config_path, project_root)
