@@ -133,17 +133,18 @@ export function ScorePage() {
           </div>
 
           {breakdown && (
-            <Card>
+            <Card className="max-w-2xl">
               <CardHeader>
                 <CardTitle>Factor Breakdown</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-1">
                 {Object.entries(breakdown).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm capitalize">
+                  <div key={key} className="flex items-center py-1.5 border-b border-dashed border-border/40 last:border-0">
+                    <span className="text-sm capitalize shrink-0">
                       {key.replace(/_/g, ' ')}
                     </span>
-                    <span className="font-mono text-sm font-medium">
+                    <span className="grow mx-3 border-b border-dotted border-muted-foreground/25 mt-[0.4em]" />
+                    <span className="font-mono text-sm font-medium shrink-0 tabular-nums">
                       {typeof value === 'number' ? value.toLocaleString() : String(value)}
                     </span>
                   </div>
@@ -153,17 +154,18 @@ export function ScorePage() {
           )}
 
           {result.summary && (
-            <Card>
+            <Card className="max-w-2xl">
               <CardHeader>
                 <CardTitle>Summary</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-1">
                 {Object.entries(result.summary).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-sm capitalize">
+                  <div key={key} className="flex items-center py-1.5 border-b border-dashed border-border/40 last:border-0">
+                    <span className="text-sm capitalize shrink-0">
                       {key.replace(/_/g, ' ')}
                     </span>
-                    <span className="font-mono text-sm font-medium">
+                    <span className="grow mx-3 border-b border-dotted border-muted-foreground/25 mt-[0.4em]" />
+                    <span className="font-mono text-sm font-medium shrink-0 tabular-nums">
                       {typeof value === 'number' ? value.toLocaleString() : String(value)}
                     </span>
                   </div>
