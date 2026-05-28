@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 
 from api.schemas import AnalyzeRequest
 from devkit.memory.history import AnalysisHistoryStore
+from devkit.memory.recommendations import RecommendationTracker
 from devkit.tasks.full_audit import create_full_audit_task
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
@@ -50,7 +51,7 @@ async def run_analyze(req: AnalyzeRequest):
 
         try:
             store = AnalysisHistoryStore(HISTORY_DB_PATH)
-            store.record_analysis(
+            record_id = store.record_analysis(
                 config_path=config_path_str,
                 health_score=summary.get("health_score", 0),
                 risk_score=summary.get("risk_score", audit.get("risk_score", 0)),
@@ -61,6 +62,13 @@ async def run_analyze(req: AnalyzeRequest):
                 recommendations=optimization.get("recommendations", []),
                 raw_report=json.dumps(result),
             )
+            recs = optimization.get("recommendations", [])
+            if record_id > 0 and recs:
+                rec_tracker = RecommendationTracker(HISTORY_DB_PATH)
+                rec_tracker.add_recommendations(
+                    analysis_id=record_id,
+                    recommendations=recs,
+                )
         except Exception:
             pass
 
