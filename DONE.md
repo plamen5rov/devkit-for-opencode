@@ -13,6 +13,10 @@
 
 ## Web UI Integration
 
+- [2026-05-28] style(analyze): color-code Analysis Details cards (files modified: web/src/pages/Analyze.tsx)
+  - Permissions: blue, Agents: violet, Skills: emerald, MCP Servers: amber, Commands: cyan
+  - Each card has matching colored border, subtle tinted background, and colored dot icon
+
 - [2026-05-28] feat(analyze): colored issue/warning cards with checkboxes and fix generation (files modified: web/src/pages/Analyze.tsx, web/src/components/ui/checkbox.tsx, web/package.json)
   - Red-tinted cards for Issues, yellow-tinted for Warnings with colored borders
   - Checkbox next to each fixable issue for selective fixing
