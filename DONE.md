@@ -2,6 +2,15 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] fix: Clear All Data button now clears CodeMirror editors on all tabs (files modified: web/src/pages/Analyze.tsx, web/src/pages/Audit.tsx, web/src/pages/Score.tsx, web/src/pages/Migrate.tsx)
+  - Added reverse sync useEffect (configContent → configText) so session context resets propagate to local editor state
+  - Also added allow rules for source venv, make, bun, pytest to OpenCode global bash permissions
+
+- [2026-05-28] fix: improve Migration Assistant UX with empty states and auto-scroll (files modified: web/src/pages/Migrate.tsx)
+  - Blue info card when no config loaded, guiding users to paste JSON or run Analyze tab first
+  - Green check card when modern config has no deprecated fields
+  - Auto-scroll to results section after migration analysis completes
+
 - [2026-05-28] fix: recommendations tab was empty — analysis pipeline now populates recommendations SQLite table (files modified: api/routes/analyze.py)
   - Root cause: Dashboard read recommendations from analysis_records JSON column, but Recommendations tab queried separate recommendations table which was never written
   - Added RecommendationTracker.add_recommendations() call after each analysis run
