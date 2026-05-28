@@ -16,45 +16,57 @@ import { ScoreGauge } from '@/components/ScoreGauge'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
-import { Upload, FileText, Play, Loader2 } from 'lucide-react'
+import { Upload, Play, Loader2, Clipboard } from 'lucide-react'
+
+type TabType = 'upload' | 'paste'
 
 export function AnalyzePage() {
   const [configText, setConfigText] = useState('')
-  const [configPath, setConfigPath] = useState('')
-  const [activeTab, setActiveTab] = useState<'upload' | 'path'>('path')
+  const [activeTab, setActiveTab] = useState<TabType>('paste')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const analyzeMutation = useMutation({
-    mutationFn: (path?: string) => analyzeConfig(path),
+    mutationFn: (content: string) => analyzeConfig(content),
   })
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => uploadConfig(file),
     onSuccess: (res) => {
-      setConfigText(JSON.stringify(res.data.config, null, 2))
+      const content = (res.data as any).content
+      setConfigText(content)
+      if (content) {
+        analyzeMutation.mutate(content)
+      }
     },
   })
 
   const handleRun = () => {
-    analyzeMutation.mutate(activeTab === 'path' ? configPath || undefined : undefined)
+    if (configText.trim()) {
+      analyzeMutation.mutate(configText)
+    }
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setSelectedFile(file)
-      uploadMutation.mutate(file)
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        setConfigText(ev.target?.result as string)
+      }
+      reader.readAsText(file)
     }
   }
 
   const result = analyzeMutation.data?.data
   const summary = result?.orchestrator?.summary ?? {}
+  const findings = result?.audit?.findings ?? []
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Analyze</h1>
-        <p className="text-muted-foreground">Run full analysis on an OpenCode configuration</p>
+        <p className="text-muted-foreground">Paste or upload an OpenCode configuration for analysis</p>
       </div>
 
       <Card>
@@ -64,12 +76,12 @@ export function AnalyzePage() {
         <CardContent className="space-y-4">
           <div className="flex gap-2">
             <Button
-              variant={activeTab === 'path' ? 'default' : 'outline'}
+              variant={activeTab === 'paste' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setActiveTab('path')}
+              onClick={() => setActiveTab('paste')}
             >
-              <FileText className="mr-2 h-4 w-4" />
-              Config Path
+              <Clipboard className="mr-2 h-4 w-4" />
+              Paste JSON
             </Button>
             <Button
               variant={activeTab === 'upload' ? 'default' : 'outline'}
@@ -81,36 +93,37 @@ export function AnalyzePage() {
             </Button>
           </div>
 
-          {activeTab === 'path' && (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="~/.config/opencode/opencode.json"
-                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm"
-                value={configPath}
-                onChange={(e) => setConfigPath(e.target.value)}
-              />
-            </div>
+          {activeTab === 'paste' && (
+            <CodeMirror
+              value={configText}
+              height="350px"
+              extensions={[json()]}
+              theme={vscodeDark}
+              basicSetup={{ lineNumbers: true, foldGutter: true }}
+              onChange={(value) => setConfigText(value)}
+              placeholder={'Paste your opencode.json here...'}
+            />
           )}
 
           {activeTab === 'upload' && (
-            <div>
-              <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 hover:bg-muted/50">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {selectedFile ? selectedFile.name : 'Click to upload opencode.json'}
-                </span>
-                <input
-                  type="file"
-                  accept=".json,.jsonc"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-              </label>
-            </div>
+            <label className="flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-8 hover:bg-muted/50">
+              <Upload className="h-8 w-8 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                {selectedFile ? selectedFile.name : 'Click to upload opencode.json or .jsonc'}
+              </span>
+              <input
+                type="file"
+                accept=".json,.jsonc"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
           )}
 
-          <Button onClick={handleRun} disabled={analyzeMutation.isPending}>
+          <Button
+            onClick={handleRun}
+            disabled={analyzeMutation.isPending || !configText.trim()}
+          >
             {analyzeMutation.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -151,6 +164,40 @@ export function AnalyzePage() {
               ))}
             </div>
           </div>
+
+          {findings.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Findings ({findings.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Severity</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Title</TableHead>
+                      <TableHead>Description</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {findings.map((f: any, i: number) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <SeverityBadge severity={f.severity} />
+                        </TableCell>
+                        <TableCell className="font-mono text-xs">{f.category}</TableCell>
+                        <TableCell className="font-medium">{f.title}</TableCell>
+                        <TableCell className="max-w-md truncate text-muted-foreground">
+                          {f.description}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
 
           {result.raw_analyses && (
             <Card>

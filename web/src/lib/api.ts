@@ -90,8 +90,8 @@ export interface RecommendationItem {
   notes: string | null
 }
 
-export const analyzeConfig = (configPath?: string) =>
-  api.post<AnalyzeResult>('/analyze', { config_path: configPath })
+export const analyzeConfig = (configContent: string) =>
+  api.post<AnalyzeResult>('/analyze', { config_content: configContent })
 
 export const runAudit = (configPath?: string) =>
   api.post<AuditResult>('/audit', { config_path: configPath })

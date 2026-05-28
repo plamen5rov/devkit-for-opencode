@@ -10,8 +10,7 @@ from pydantic import BaseModel, Field
 # --- Request schemas ---
 
 class AnalyzeRequest(BaseModel):
-    config_path: Optional[str] = None
-    verbose: bool = False
+    config_content: str
 
 
 class AuditRequest(BaseModel):

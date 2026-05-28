@@ -29,6 +29,7 @@ async def upload_config(file: UploadFile):
         "valid": result["valid"],
         "errors": result["errors"],
         "config": result["config"],
+        "content": raw,
     }
 
 
