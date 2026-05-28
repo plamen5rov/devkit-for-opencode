@@ -284,6 +284,16 @@ class RecommendationTracker:
                 "dismissed": row[3],
             }
 
+    def clear_all(self) -> int:
+        """Clear all recommendation records.
+
+        Returns:
+            Number of records deleted.
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("DELETE FROM recommendations")
+            return cursor.rowcount
+
     @staticmethod
     def _row_to_entry(row: sqlite3.Row) -> RecommendationEntry:
         """Convert a database row to a RecommendationEntry."""

@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from api.schemas import HistoryListResponse, TrendRecord, TrendResponse
 from devkit.memory.history import AnalysisHistoryStore
+from devkit.memory.recommendations import RecommendationTracker
 
 DEFAULT_DB_PATH = Path.home() / ".local" / "share" / "devkit" / "history.db"
 
@@ -63,12 +64,20 @@ async def get_trend(
 
 @router.delete("/all")
 async def clear_history():
-    """Clear all analysis history records."""
+    """Clear all analysis history and recommendation records."""
     store = _get_store()
     if not store:
-        return {"deleted": 0}
+        return {"deleted": 0, "recommendations_deleted": 0}
+
+    recs_deleted = 0
+    try:
+        tracker = RecommendationTracker(DEFAULT_DB_PATH)
+        recs_deleted = tracker.clear_all()
+    except Exception:
+        pass
+
     count = store.clear_all()
-    return {"deleted": count}
+    return {"deleted": count, "recommendations_deleted": recs_deleted}
 
 
 @router.get("/{record_id}")

@@ -358,6 +358,25 @@ def test_get_summary(tracker: RecommendationTracker) -> None:
     assert summary["dismissed"] == 1
 
 
+def test_clear_all_recommendations(tracker: RecommendationTracker) -> None:
+    """Test clearing all recommendation records."""
+    tracker.add_recommendations(analysis_id=1, recommendations=[
+        {"category": "mcp", "title": "Rec 1", "description": ""},
+        {"category": "agent", "title": "Rec 2", "description": ""},
+    ])
+    assert tracker.get_summary()["total"] == 2
+
+    count = tracker.clear_all()
+    assert count == 2
+    assert tracker.get_summary()["total"] == 0
+
+
+def test_clear_all_empty_recommendations(tracker: RecommendationTracker) -> None:
+    """Test clearing when no recommendations exist."""
+    count = tracker.clear_all()
+    assert count == 0
+
+
 def test_recommendation_entry_to_dict() -> None:
     """Test RecommendationEntry serialization."""
     entry = RecommendationEntry(

@@ -2,6 +2,12 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] fix: "Clear All Data" now clears Recommendations table (files modified: devkit/memory/recommendations.py, api/routes/history.py, tests/test_memory.py, README.md)
+  - Added `clear_all()` method to `RecommendationTracker` (DELETE FROM recommendations)
+  - `DELETE /api/history/all` now calls `RecommendationTracker.clear_all()` alongside `AnalysisHistoryStore.clear_all()`
+  - Added 2 new tests: `test_clear_all_recommendations`, `test_clear_all_empty_recommendations`
+  - Updated test count to 290 in README.md
+
 - [2026-05-28] docs: add README audit step to AGENTS.md commit workflow (files modified: AGENTS.md, README.md)
   - AGENTS.md section 5 now lists "Audit README.md" as step #1 before commit & push
   - Fixed stale test counts in AGENTS.md (300→288) to match current state

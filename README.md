@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests: 288 passing](https://img.shields.io/badge/tests-288%20passing-brightgreen.svg)]()
+[![Tests: 290 passing](https://img.shields.io/badge/tests-290%20passing-brightgreen.svg)]()
 
 ## Overview
 
@@ -240,7 +240,7 @@ devkit-for-opencode/
 │   └── __init__.py
 ├── api/                 # FastAPI backend with 7 route groups
 ├── web/                 # React + Vite + TypeScript + Tailwind frontend
-├── tests/               # 288 unit tests
+├── tests/               # 290 unit tests
 ├── examples/            # Example OpenCode configs (good, bad, minimal)
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)

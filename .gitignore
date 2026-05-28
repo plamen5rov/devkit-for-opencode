@@ -15,7 +15,7 @@ node_modules/
 web/dist/
 
 # DevKit runtime
-memory/
+memory/history.db
 
 # OS/editor
 .DS_Store
