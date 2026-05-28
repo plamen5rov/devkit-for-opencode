@@ -15,7 +15,7 @@ DevKit provides deep analysis of OpenCode configuration files (`opencode.json`).
 - Calculates health scores (0–100) and risk scores (0–100)
 - Detects hardcoded secrets, overly permissive rules, and deprecated config fields
 - Tracks analysis history with SQLite-backed persistence
-- Generates JSON, Markdown, and HTML reports
+- Generates JSON, Markdown, Table, and HTML (via API) reports
 - Runs as a standalone CLI, web UI (FastAPI + React), or inside OpenCode via TypeScript tools
 - Web UI features: paste/upload configs, fix generation, health score trends, session persistence with "Clear All Data"
 
@@ -152,14 +152,16 @@ devkit migrate --config-path ~/.config/opencode/opencode.json --diff
 
 ### Common Flags
 
-| Flag | Description |
-|------|-------------|
-| `--config-path PATH` | Path to `opencode.json` (auto-detects if omitted) |
-| `--format json\|markdown\|table` | Output format |
-| `--verbose` | Enable verbose output |
-| `--fix` | Generate fixed config (audit mode) |
-| `--detailed` | Show factor breakdown (score mode) |
-| `--diff` | Show config diff (migrate mode) |
+| Flag | Applies To | Description |
+|------|------------|-------------|
+| `--config-path PATH` | all | Path to `opencode.json` (auto-detects if omitted) |
+| `--format json\|markdown\|table` | analyze, audit, score | Output format |
+| `--verbose` | all | Enable verbose output |
+| `--fix` | audit | Generate fixed config |
+| `--detailed` | score | Show factor breakdown |
+| `--diff` | migrate | Show config diff |
+| `--limit N` | history | Max records to show |
+| `--db-path PATH` | history | Path to history database |
 
 ### Report Generator
 
