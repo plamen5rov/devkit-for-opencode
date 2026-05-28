@@ -2,6 +2,13 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] docs: audit and correct README.md for accuracy (files modified: README.md)
+  - Fixed `--verbose` applies to: changed "all" → "analyze, audit, score, migrate" (history unsupported)
+  - Fixed `--format` applies to: added "history" (supports json/table)
+  - Fixed "Clear All Data" description: removes "history data" (only clears session state, not SQLite)
+  - Fixed roadmap test counts: Phase 3 43→37, Phase 4 60→59 (verified against actual test file counts)
+  - Verified all CLI commands, flags, make targets, and structure tree entries exist and work
+
 - [2026-05-28] fix: remove misleading tool config example from README — custom tools are auto-discovered (files modified: README.md, .opencode/opencode.json)
   - Removed incorrect `"tool"` config JSON block from README OpenCode Integration section
   - Removed invalid `"tool"` key from project's .opencode/opencode.json that caused schema error

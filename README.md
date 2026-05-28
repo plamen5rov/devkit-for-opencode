@@ -76,7 +76,7 @@ DevKit includes a FastAPI + React web interface with:
 - **Migration Assistant** — detect deprecated fields and generate migrated configs
 - **History & Recommendations** — track analysis trends and manage suggestions
 - **Session persistence** — all tab state survives navigation; shared config input across tabs
-- **Clear All Data** — one-click reset in the header clears all session and history data
+- **Clear All Data** — one-click reset in the header clears all session state
 
 ```bash
 # Start both servers with one command
@@ -155,8 +155,8 @@ devkit migrate --config-path ~/.config/opencode/opencode.json --diff
 | Flag | Applies To | Description |
 |------|------------|-------------|
 | `--config-path PATH` | all | Path to `opencode.json` (auto-detects if omitted) |
-| `--format json\|markdown\|table` | analyze, audit, score | Output format |
-| `--verbose` | all | Enable verbose output |
+| `--format json\|markdown\|table` | analyze, audit, score, history | Output format |
+| `--verbose` | analyze, audit, score, migrate | Enable verbose output |
 | `--fix` | audit | Generate fixed config |
 | `--detailed` | score | Show factor breakdown |
 | `--diff` | migrate | Show config diff |
@@ -334,8 +334,8 @@ devkit audit --format markdown
 |-------|--------|-------------|
 | 1. Infrastructure | ✅ Done | Python scaffolding, test infrastructure |
 | 2. Core Tools | ✅ Done | 6 analyzers with 83 tests |
-| 3. Agent Wrappers | ✅ Done | 3 agent wrappers (orchestrator, auditor, advisor) with 43 tests |
-| 4. Tasks & Workflows | ✅ Done | 4 workflow tasks with 60 tests |
+| 3. Agent Wrappers | ✅ Done | 3 agent wrappers (orchestrator, auditor, advisor) with 37 tests |
+| 4. Tasks & Workflows | ✅ Done | 4 workflow tasks with 59 tests |
 | 5. OpenCode Tools | ✅ Done | 3 TypeScript tools |
 | 6. Memory & Persistence | ✅ Done | SQLite history + recommendation tracker (26 tests) |
 | 7. CLI & UI | ✅ Done | CLI with 5 commands + FastAPI + React web UI (42 tests) |
