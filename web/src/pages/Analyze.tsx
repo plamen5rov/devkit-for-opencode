@@ -536,9 +536,12 @@ export function AnalyzePage() {
               <CardContent>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {result.raw_analyses.permissions && (
-                    <Card>
+                    <Card className="border-blue-500/40 bg-blue-500/5 dark:bg-blue-500/10">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Permissions</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-sm text-blue-500">
+                          <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                          Permissions
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-1 text-sm">
@@ -559,9 +562,12 @@ export function AnalyzePage() {
                     </Card>
                   )}
                   {result.raw_analyses.agents && (
-                    <Card>
+                    <Card className="border-violet-500/40 bg-violet-500/5 dark:bg-violet-500/10">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Agents</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-sm text-violet-500">
+                          <span className="h-2.5 w-2.5 rounded-full bg-violet-500" />
+                          Agents
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-1 text-sm">
@@ -578,9 +584,12 @@ export function AnalyzePage() {
                     </Card>
                   )}
                   {result.raw_analyses.skills && (
-                    <Card>
+                    <Card className="border-emerald-500/40 bg-emerald-500/5 dark:bg-emerald-500/10">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Skills</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-sm text-emerald-500">
+                          <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                          Skills
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-1 text-sm">
@@ -597,9 +606,12 @@ export function AnalyzePage() {
                     </Card>
                   )}
                   {result.raw_analyses.mcp_servers && (
-                    <Card>
+                    <Card className="border-amber-500/40 bg-amber-500/5 dark:bg-amber-500/10">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">MCP Servers</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-sm text-amber-500">
+                          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                          MCP Servers
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-1 text-sm">
@@ -620,9 +632,12 @@ export function AnalyzePage() {
                     </Card>
                   )}
                   {result.raw_analyses.commands && (
-                    <Card>
+                    <Card className="border-cyan-500/40 bg-cyan-500/5 dark:bg-cyan-500/10">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">Commands</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-sm text-cyan-500">
+                          <span className="h-2.5 w-2.5 rounded-full bg-cyan-500" />
+                          Commands
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-1 text-sm">
