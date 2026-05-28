@@ -2,13 +2,20 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] feat: global session persistence with Clear All Data button (files modified: web/src/lib/SessionContext.tsx, web/src/components/Layout.tsx, web/src/main.tsx, web/src/pages/Analyze.tsx, web/src/pages/Audit.tsx, web/src/pages/Score.tsx, web/src/pages/Migrate.tsx, web/src/lib/api.ts, api/routes/audit.py, api/routes/score.py, api/routes/migrate.py, api/schemas.py, api/utils.py)
+  - Add SessionContext with localStorage persistence for configContent + per-tab results
+  - All analysis tabs now survive navigation via global context
+  - Config content is shared: paste JSON once, run on any tab
+  - Audit, Score, and Migrate pages now have paste/upload tabs like Analyze
+  - Backend audit/score/migrate endpoints accept config_content (inline JSON) via new resolve_config_from_request utility
+  - Add "Clear All Data" trash button in header to reset all state
+  - 288 tests passing, TypeScript clean, Vite build clean
+
 - [2026-05-28] fix: persist analysis history and analyze state, add start script (files modified: api/routes/analyze.py, api/routes/history.py, web/src/pages/Analyze.tsx, Makefile, start.sh)
   - Save analysis results to SQLite history DB after each analyze run (fixes Dashboard "No analysis data")
   - Fix route ordering: /trend before /{record_id} to prevent FastAPI 422 on Dashboard requests
   - Persist Analyze page state via sessionStorage (configText, activeTab, result) — survives tab switches
-  - Move Issues/Warnings/Fix-Generate sections to bottom of page
   - Add start.sh and Makefile: `make start` or `./start.sh` launches API + Vite in one terminal
-  - Makefile also has format, lint, test targets
   - 288 tests passing
 
 ## Core Refactoring
