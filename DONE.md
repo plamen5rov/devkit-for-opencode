@@ -13,6 +13,14 @@
 
 ## Web UI Integration
 
+- [2026-05-28] fix(analyze): show issues/warnings details, replace raw JSON with structured cards (files modified: web/src/pages/Analyze.tsx)
+  - Add Issues section displaying orchestrator.issues with full descriptions
+  - Add Warnings section displaying orchestrator.warnings with full descriptions
+  - Rename Findings to Audit Findings, show message + suggestion columns
+  - Add Recommendations table with priority badges
+  - Replace raw JSON blob with structured analysis detail cards (permissions, agents, skills, MCP, commands)
+  - No config content leaked — only summary metrics shown
+
 - [2026-05-28] refactor(analyze): remove path option, paste/upload only (files modified: api/routes/analyze.py, api/routes/config.py, api/schemas.py, web/src/lib/api.ts, web/src/pages/Analyze.tsx)
   - Remove filesystem path access from analyze endpoint (security improvement)
   - Analyze page now has 2 tabs: Paste JSON and Upload File
