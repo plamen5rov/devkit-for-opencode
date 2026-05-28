@@ -2,6 +2,26 @@
 
 ## Fixes & Improvements
 
+- [2026-05-28] fix: recommendations tab was empty — analysis pipeline now populates recommendations SQLite table (files modified: api/routes/analyze.py)
+  - Root cause: Dashboard read recommendations from analysis_records JSON column, but Recommendations tab queried separate recommendations table which was never written
+  - Added RecommendationTracker.add_recommendations() call after each analysis run
+  - Backfilled 3 orphaned recommendations from existing analysis records
+
+- [2026-05-28] feat: add config context, severity breakdown, and recommendations to Dashboard (files modified: web/src/pages/Dashboard.tsx)
+  - Breadcrumb bar showing current config path and last analysis timestamp
+  - Severity breakdown row with colored chips (Critical/High/Medium/Low/Info counts)
+  - Recommendations card with priority dots (red/yellow/gray), effort badges, category labels, and timestamp metadata
+
+- [2026-05-28] fix: improve Health Score metric readability on wide screens (files modified: web/src/pages/Score.tsx)
+  - Added max-w-2xl to constrain metric card width
+  - Dotted leader lines between label and value spans for visual tracking
+  - Dashed row separators with shrink-0 on label/value wraps
+
+- [2026-05-28] docs: fix README.md CLI flag table and report format accuracy (files modified: README.md)
+  - Added "Applies To" column to Common Flags table showing which commands each flag supports
+  - Added missing --limit and --db-path flags
+  - Corrected "HTML reports" to "Table, and HTML (via API)"
+
 - [2026-05-28] feat: global session persistence with Clear All Data button (files modified: web/src/lib/SessionContext.tsx, web/src/components/Layout.tsx, web/src/main.tsx, web/src/pages/Analyze.tsx, web/src/pages/Audit.tsx, web/src/pages/Score.tsx, web/src/pages/Migrate.tsx, web/src/lib/api.ts, api/routes/audit.py, api/routes/score.py, api/routes/migrate.py, api/schemas.py, api/utils.py)
   - Add SessionContext with localStorage persistence for configContent + per-tab results
   - All analysis tabs now survive navigation via global context

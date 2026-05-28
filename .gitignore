@@ -14,6 +14,9 @@ graphify-out/
 node_modules/
 web/dist/
 
+# DevKit runtime
+memory/
+
 # OS/editor
 .DS_Store
 *.swp
