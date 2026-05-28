@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { GitCompare, Loader2, Upload } from 'lucide-react'
+import { GitCompare, Loader2, Upload, Info, CheckCircle } from 'lucide-react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
@@ -24,6 +24,7 @@ export function MigratePage() {
   const [activeTab, setActiveTab] = useState<'paste' | 'upload'>('paste')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (configText) setConfigContent(configText)
@@ -61,6 +62,14 @@ export function MigratePage() {
 
   const result = migrateMutation.data?.data ?? tabResults.migrate
   const changes = result?.changes ?? []
+
+  useEffect(() => {
+    if (result) {
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [result])
+
+  const hasConfig = configText.trim().length > 0
 
   return (
     <div className="space-y-6">
@@ -114,7 +123,7 @@ export function MigratePage() {
             </div>
           )}
 
-          <Button onClick={handleRun} disabled={migrateMutation.isPending || !configText.trim()}>
+          <Button onClick={handleRun} disabled={migrateMutation.isPending || !hasConfig}>
             {migrateMutation.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -124,6 +133,21 @@ export function MigratePage() {
           </Button>
         </CardContent>
       </Card>
+
+      {!hasConfig && !result && (
+        <Card className="border-blue-500/30 bg-blue-500/5">
+          <CardContent className="pt-6 flex items-start gap-3">
+            <Info className="h-5 w-5 text-blue-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-medium text-blue-400">No configuration loaded</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Paste or upload an OpenCode config above, or run an analysis on the{' '}
+                <span className="font-medium">Analyze</span> tab first to share config across tools.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {migrateMutation.isError && (
         <Card className="border-destructive">
@@ -136,7 +160,7 @@ export function MigratePage() {
       )}
 
       {result && (
-        <div className="space-y-4">
+        <div ref={resultsRef} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardContent className="pt-6">
@@ -202,6 +226,20 @@ export function MigratePage() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {changes.length === 0 && (
+            <Card className="border-emerald-500/30 bg-emerald-500/5">
+              <CardContent className="pt-6 flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-emerald-400">No deprecated fields detected</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Your configuration is up to date. No migration changes are needed.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           )}
