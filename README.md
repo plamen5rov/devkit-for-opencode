@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests: 290 passing](https://img.shields.io/badge/tests-290%20passing-brightgreen.svg)]()
+[![Tests: 337 passing](https://img.shields.io/badge/tests-337%20passing-brightgreen.svg)]()
 
 ## Overview
 
@@ -73,6 +73,7 @@ DevKit includes a FastAPI + React web interface with:
 - **Analyze** — paste or upload configs, view health scores, get fix suggestions with copy-paste output
 - **Security Audit** — scan for hardcoded secrets, dangerous permissions, and anti-patterns
 - **Health Score** — detailed factor breakdown with charts and trends
+- **Config Diff** — compare two configs side by side, grouped by section with added/removed/changed counts
 - **Migration Assistant** — detect deprecated fields and generate migrated configs
 - **History & Recommendations** — track analysis trends and manage suggestions
 - **Session persistence** — all tab state survives navigation; shared config input across tabs
@@ -90,7 +91,7 @@ make start
 
 ## CLI Usage
 
-DevKit provides five commands via the `devkit` CLI:
+DevKit provides six commands via the `devkit` CLI:
 
 ### `devkit analyze`
 
@@ -150,12 +151,24 @@ Detect and fix deprecated config fields — legacy `tools` → `permission`, boo
 devkit migrate --config-path ~/.config/opencode/opencode.json --diff
 ```
 
+### `devkit diff`
+
+Compare two OpenCode configs to see exactly what changed — field by field, with added/removed/changed grouping.
+
+```bash
+# Compare two config files
+devkit diff --from ~/.config/opencode/opencode.json --to examples/good-config.json
+
+# JSON output
+devkit diff --from config-v1.json --to config-v2.json --format json
+```
+
 ### Common Flags
 
 | Flag | Applies To | Description |
 |------|------------|-------------|
 | `--config-path PATH` | all | Path to `opencode.json` (auto-detects if omitted) |
-| `--format json\|markdown\|table` | analyze, audit, score, history | Output format |
+| `--format json\|markdown\|table` | analyze, audit, score, history, diff | Output format |
 | `--verbose` | analyze, audit, score, migrate | Enable verbose output |
 | `--fix` | audit | Generate fixed config |
 | `--detailed` | score | Show factor breakdown |
@@ -196,7 +209,7 @@ DevKit is built around a pipeline of stateless analyzer tools that return struct
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Tools** | 6 | Config reader, permission analyzer, agent/skill/MCP/command analyzers |
+| **Tools** | 7 | Config reader, permission analyzer, agent/skill/MCP/command analyzers, config diff |
 | **Agents** | 3 | Orchestrator, Config Auditor, Optimization Advisor (coordinate analyzers) |
 | **Tasks** | 4 | Full audit, security scan, token optimization, migration assistant |
 
@@ -240,7 +253,7 @@ devkit-for-opencode/
 │   └── __init__.py
 ├── api/                 # FastAPI backend with 7 route groups
 ├── web/                 # React + Vite + TypeScript + Tailwind frontend
-├── tests/               # 290 unit tests
+├── tests/               # 337 unit tests
 ├── examples/            # Example OpenCode configs (good, bad, minimal)
 ├── .opencode/tools/     # TypeScript tools for OpenCode runtime
 ├── knowledge/           # OpenCode reference docs (read-only)
@@ -334,12 +347,12 @@ devkit audit --format markdown
 | Phase | Status | Description |
 |-------|--------|-------------|
 | 1. Infrastructure | ✅ Done | Python scaffolding, test infrastructure |
-| 2. Core Tools | ✅ Done | 6 analyzers with 83 tests |
+| 2. Core Tools | ✅ Done | 7 analyzers (config, permissions, agents, skills, MCP, commands, diff) with 130 tests |
 | 3. Agent Wrappers | ✅ Done | 3 agent wrappers (orchestrator, auditor, advisor) with 37 tests |
 | 4. Tasks & Workflows | ✅ Done | 4 workflow tasks with 59 tests |
 | 5. OpenCode Tools | ✅ Done | 3 TypeScript tools |
 | 6. Memory & Persistence | ✅ Done | SQLite history + recommendation tracker (26 tests) |
-| 7. CLI & UI | ✅ Done | CLI with 5 commands + FastAPI + React web UI (42 tests) |
+| 7. CLI & UI | ✅ Done | CLI with 6 commands + FastAPI + React web UI (8 pages, 42 tests) |
 | 8. Documentation | 🚧 In Progress | README, examples, AGENTS.md update |
 | 9. Advanced Features | ✅ Done | Multi-agent orchestration, auto-remediation, plugin system |
 

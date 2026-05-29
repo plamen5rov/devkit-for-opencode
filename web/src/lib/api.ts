@@ -90,6 +90,26 @@ export interface RecommendationItem {
   notes: string | null
 }
 
+export interface DiffEntry {
+  path: string
+  left_value: any
+  right_value: any
+  change_type: string
+  section: string
+}
+
+export interface DiffResult {
+  from_label: string
+  to_label: string
+  entries: DiffEntry[]
+  added_count: number
+  removed_count: number
+  changed_count: number
+  total_changes: number
+  from_config: Record<string, any>
+  to_config: Record<string, any>
+}
+
 export const analyzeConfig = (configContent: string) =>
   api.post<AnalyzeResult>('/analyze', { config_content: configContent })
 
@@ -133,5 +153,16 @@ export const uploadConfig = (file: File) => {
 
 export const validateConfig = (configPath: string) =>
   api.post('/config/validate', { config_path: configPath })
+
+export const runDiff = (fromContent: string, toContent: string) =>
+  api.post<DiffResult>('/diff', { from_content: fromContent, to_content: toContent })
+
+export const runDiffCompare = (configContent: string | null, recordId: number, configPath?: string, dbPath?: string) =>
+  api.post<DiffResult>('/diff/compare', {
+    config_content: configContent,
+    config_path: configPath,
+    record_id: recordId,
+    db_path: dbPath,
+  })
 
 export default api

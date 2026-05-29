@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from api.routes import analyze, audit, config, history, migrate, recommendations, score
+from api.routes import analyze, audit, config, diff, history, migrate, recommendations, score
 from devkit import __version__
 
 app = FastAPI(
@@ -34,6 +34,7 @@ app.include_router(score.router, prefix="/api")
 app.include_router(history.router, prefix="/api")
 app.include_router(migrate.router, prefix="/api")
 app.include_router(config.router, prefix="/api")
+app.include_router(diff.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
 
 

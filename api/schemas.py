@@ -87,3 +87,17 @@ class RecommendationSummaryResponse(BaseModel):
     open: int
     applied: int
     dismissed: int
+
+
+class DiffRequest(BaseModel):
+    from_content: Optional[str] = None
+    to_content: Optional[str] = None
+    from_path: Optional[str] = None
+    to_path: Optional[str] = None
+
+
+class DiffCompareRequest(BaseModel):
+    config_path: Optional[str] = None
+    config_content: Optional[str] = None
+    record_id: int
+    db_path: Optional[str] = None

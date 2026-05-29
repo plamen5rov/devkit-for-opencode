@@ -6,6 +6,7 @@ Usage:
     devkit score --config-path PATH [--format json|table] [--detailed]
     devkit history [--config-path PATH] [--limit N]
     devkit migrate --config-path PATH [--format json|markdown] [--diff]
+    devkit diff --from PATH --to PATH [--format json|markdown]
     devkit --help
 """
 
@@ -69,6 +70,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     migrate_parser.add_argument("--format", dest="output_format", choices=["json", "markdown"], default="markdown")
     migrate_parser.add_argument("--diff", action="store_true", help="Show config diff")
     migrate_parser.add_argument("--verbose", action="store_true")
+
+    # diff
+    diff_parser = subparsers.add_parser("diff", help="Compare two configs")
+    diff_parser.add_argument("--from", dest="from_path", type=str, default=None, help="Path to source config")
+    diff_parser.add_argument("--to", dest="to_path", type=str, default=None, help="Path to target config")
+    diff_parser.add_argument("--format", dest="output_format", choices=["json", "markdown"], default="markdown")
+    diff_parser.add_argument("--verbose", action="store_true")
 
     return parser.parse_args(argv)
 
@@ -274,6 +282,30 @@ def cmd_migrate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_diff(args: argparse.Namespace) -> int:
+    """Compare two configs."""
+    from devkit.tools.config_diff import diff_config_files
+
+    from_path = Path(args.from_path) if args.from_path else None
+    to_path = Path(args.to_path) if args.to_path else None
+
+    if not from_path or not from_path.exists():
+        print("No source config found. Specify --from PATH.")
+        return 1
+    if not to_path or not to_path.exists():
+        print("No target config found. Specify --to PATH.")
+        return 1
+
+    result = diff_config_files(str(from_path), str(to_path))
+
+    if args.output_format == "json":
+        print(json.dumps(result.to_dict(), indent=2, default=str))
+    else:
+        print(result.to_markdown())
+
+    return 0
+
+
 def main() -> int:
     load_dotenv()
 
@@ -287,6 +319,7 @@ def main() -> int:
         print("  score      Calculate health score")
         print("  history    View analysis history")
         print("  migrate    Migration assistant")
+        print("  diff       Compare two configs")
         print("\nRun 'devkit <command> --help' for more information.")
         return 0
 
@@ -296,6 +329,7 @@ def main() -> int:
         "score": cmd_score,
         "history": cmd_history,
         "migrate": cmd_migrate,
+        "diff": cmd_diff,
     }
 
     handler = handlers.get(args.command)

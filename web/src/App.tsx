@@ -7,6 +7,7 @@ import { ScorePage } from './pages/Score'
 import { HistoryPage } from './pages/History'
 import { MigratePage } from './pages/Migrate'
 import { RecommendationsPage } from './pages/Recommendations'
+import { DiffPage } from './pages/Diff'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/score" element={<ScorePage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/migrate" element={<MigratePage />} />
+        <Route path="/diff" element={<DiffPage />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
       </Routes>
     </Layout>

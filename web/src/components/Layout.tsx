@@ -12,6 +12,7 @@ import {
   BarChart3,
   Clock,
   GitCompare,
+  ArrowLeftRight,
   Lightbulb,
   Play,
   Trash2,
@@ -24,6 +25,7 @@ const navItems = [
   { to: '/score', label: 'Health Score', icon: Activity },
   { to: '/history', label: 'History', icon: Clock },
   { to: '/migrate', label: 'Migration', icon: GitCompare },
+  { to: '/diff', label: 'Diff', icon: ArrowLeftRight },
   { to: '/recommendations', label: 'Recommendations', icon: Lightbulb },
 ]
 

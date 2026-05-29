@@ -2,6 +2,14 @@
 
 ## Fixes & Improvements
 
+- [2026-05-29] feat: add Config Diff feature — compare two OpenCode configs (files modified: devkit/tools/config_diff.py (new), api/routes/diff.py (new), api/schemas.py, api/main.py, devkit/cli.py, web/src/pages/Diff.tsx (new), web/src/lib/api.ts, web/src/App.tsx, web/src/components/Layout.tsx, tests/test_config_diff.py (new), README.md, DONE.md)
+  - `devkit/tools/config_diff.py` — deep recursive JSON diff engine with section-grouped output
+  - `devkit diff --from PATH --to PATH` — CLI command with JSON and Markdown output
+  - `POST /api/diff` — compare two configs as inline JSON or file paths
+  - `POST /api/diff/compare` — compare config against a historical analysis record
+  - Web UI Diff page with split-view paste/upload panels, summary cards, and section-grouped changes table
+  - 47 new tests pass; full suite at 337 tests (+47)
+
 - [2026-05-29] docs: add FEATURES.md with 15 potential new feature ideas across impact tiers (files modified: FEATURES.md - new file)
   - Covers high-impact (config diff, `devkit init`, GitHub CI/CD, dependency graph viz)
   - Medium-impact (batch analysis, backup/rollback, PDF export, file watcher, config service)
