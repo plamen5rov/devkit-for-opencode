@@ -1,13 +1,13 @@
 # FEATURES.md — Potential New Features
 
 > Brainstorm of new capabilities that could be added to DevKit for OpenCode.
-> None are committed to — this is a wishlist for future prioritization.
+> Implemented features are marked with ~~strikethrough~~.
 
 ---
 
 ## Current State
 
-All 9 planned phases are complete (290 tests passing):
+All 9 planned phases are complete (343 tests passing):
 
 | Phase | What It Covers |
 |-------|---------------|
@@ -27,14 +27,16 @@ All 9 planned phases are complete (290 tests passing):
 
 Features with the most user-facing value.
 
-### Config Diff / Comparison
+### ~~Config Diff / Comparison~~ ✅ IMPLEMENTED
 
 Compare two configs or before/after optimization to see exactly what changed.
 
-- Split-view diff in the web UI
+- Split-view diff in the web UI (paste/upload two configs)
 - CLI: `devkit diff --from config-v1.json --to config-v2.json`
-- Could reuse the migration assistant's diff logic as a starting point
-- Show health/risk score deltas between versions
+- API: `POST /api/diff` and `POST /api/diff/compare`
+- JSONC support (strips comments, handles trailing commas, `https://` URLs safe)
+- Parse error surfacing in UI when configs are invalid
+- Section-grouped changes tables with add/remove/change counts
 
 ### `devkit init` — Config Scaffolding
 
@@ -210,7 +212,7 @@ Top candidates by these criteria:
 
 | Feature | Impact | Effort | Reuse | Docs | Testable |
 |--------|--------|--------|-------|------|----------|
-| Config Diff/Comparison | High | Medium | High (migration diff) | Low | High |
+| Config Diff/Comparison | ~~High~~ Done | ~~Medium~~ | ~~High~~ | ~~Low~~ | ~~High~~ |
 | `devkit init` | High | Medium | Low | Medium | High |
 | Dependency Graph Viz | High | Medium | High (existing data) | Low | Medium |
 | E2E/Integration Tests | Medium | Medium | High | Low | High |
@@ -225,3 +227,26 @@ Top candidates by these criteria:
 | Config Validation Service | Medium | High | Medium | High | Medium |
 | Performance | Medium | Medium | None | Low | Medium |
 | Observability | Medium | Medium | None | Low | High |
+
+---
+
+## Next Feature Recommendation
+
+### Top Pick: Dependency Graph Visualization
+
+**Why this first:**
+- High impact — makes complex config relationships instantly understandable
+- High reuse — all the data already exists in the system (agent-to-agent edges, skill-permission mappings, MCP connections, command chains)
+- Low docs burden — just one new web page
+- Medium effort — ~200-300 LOC of D3.js/vis-network + ~100 lines of data extraction Python + React component + tests
+- Testable — extractors are pure functions, rendering can be snapshot-tested
+
+**What to build:**
+- New `devkit/tools/graph_builder.py` — extracts nodes/edges from a parsed config into a D3-compatible `{nodes, links}` structure
+- API route `GET /api/graph?config-path=...` returning the graph data
+- Web page `/graph` with force-directed layout (vis-network or d3-force), node colors by type (agent=blue, skill=green, MCP=orange, command=purple), edge labels showing relationship type, zoom/pan/drag interaction
+- CLI: `devkit graph --config-path ~/.config/opencode/opencode.json --output graph.json`
+
+### Runner-Up: `devkit init`
+
+Interactive config scaffolding wizard. Lower reuse (fresh build) but the highest user impact — eliminates the biggest onboarding pain point for new OpenCode users.
