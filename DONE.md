@@ -2,6 +2,13 @@
 
 ## Fixes & Improvements
 
+- [2026-05-29] docs: add FEATURES.md with 15 potential new feature ideas across impact tiers (files modified: FEATURES.md - new file)
+  - Covers high-impact (config diff, `devkit init`, GitHub CI/CD, dependency graph viz)
+  - Medium-impact (batch analysis, backup/rollback, PDF export, file watcher, config service)
+  - Low-impact (badge generation, accessibility, plugin marketplace)
+  - Engineering quality (E2E tests, performance, observability)
+  - Includes selection criteria table for prioritizing what to build next
+
 - [2026-05-28] fix: "Clear All Data" now clears Recommendations table (files modified: devkit/memory/recommendations.py, api/routes/history.py, tests/test_memory.py, README.md)
   - Added `clear_all()` method to `RecommendationTracker` (DELETE FROM recommendations)
   - `DELETE /api/history/all` now calls `RecommendationTracker.clear_all()` alongside `AnalysisHistoryStore.clear_all()`
