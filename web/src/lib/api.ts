@@ -108,6 +108,7 @@ export interface DiffResult {
   total_changes: number
   from_config: Record<string, any>
   to_config: Record<string, any>
+  parse_errors: string[]
 }
 
 export const analyzeConfig = (configContent: string) =>

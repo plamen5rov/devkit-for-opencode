@@ -274,6 +274,8 @@ def test_diff_config_strings():
 def test_diff_config_strings_invalid_json():
     result = diff_config_strings("not json", '{"model": "b"}')
     assert result.from_config == {}
+    assert len(result.parse_errors) > 0
+    assert "from" in result.parse_errors[0]
 
 
 def test_diff_config_strings_jsonc():
@@ -391,8 +393,9 @@ def test__parse_jsonc_comments():
         "model": "a/model" // inline
     }
     """
-    result = _parse_jsonc(raw)
+    result, err = _parse_jsonc(raw)
     assert result == {"model": "a/model"}
+    assert err is None
 
 
 def test__parse_jsonc_block_comments():
@@ -402,13 +405,88 @@ def test__parse_jsonc_block_comments():
         "model": "a/model"
     }
     """
-    result = _parse_jsonc(raw)
+    result, err = _parse_jsonc(raw)
     assert result == {"model": "a/model"}
+    assert err is None
 
 
 def test__parse_jsonc_invalid():
-    result = _parse_jsonc("not json")
+    result, err = _parse_jsonc("not json")
     assert result == {}
+    assert err is not None
+
+
+def test__parse_jsonc_trailing_comma():
+    raw = """{
+        "model": "a/model",
+        "permission": {
+            "*": "ask",
+        },
+    }"""
+    result, err = _parse_jsonc(raw)
+    assert err is None
+    assert result == {"model": "a/model", "permission": {"*": "ask"}}
+
+
+def test__parse_jsonc_trailing_comma_array():
+    raw = """{
+        "plugin": [
+            "pkg-a@1",
+            "pkg-b@1",
+        ]
+    }"""
+    result, err = _parse_jsonc(raw)
+    assert err is None
+    assert result == {"plugin": ["pkg-a@1", "pkg-b@1"]}
+
+
+def test_diff_strings_with_trailing_commas():
+    from_config = """{
+        "model": "a/model",
+        "permission": {
+            "*": "ask",
+        },
+    }"""
+    to_config = """{
+        "model": "b/model",
+        "permission": {
+            "*": "allow",
+        },
+    }"""
+    result = diff_config_strings(from_config, to_config)
+    assert result.parse_errors == []
+    assert result.total_changes == 2
+
+
+def test_diff_strings_parse_error():
+    from_config = """{
+        "model": "a/model",
+    }"""
+    to_config = "not json at all"
+    result = diff_config_strings(from_config, to_config)
+    assert len(result.parse_errors) == 1
+    assert "to" in result.parse_errors[0]
+
+
+def test_jsonc_url_not_broken():
+    raw = """{
+        "model": "a/model",
+        "mcp": {"url": "https://example.com/api"}
+    }"""
+    result, err = _parse_jsonc(raw)
+    assert err is None
+    assert result["mcp"]["url"] == "https://example.com/api"
+
+
+def test_jsonc_url_with_inline_comment():
+    raw = """{
+        "model": "a/model", // main model
+        "mcp": {"url": "https://example.com/api"}
+    }"""
+    result, err = _parse_jsonc(raw)
+    assert err is None
+    assert result["model"] == "a/model"
+    assert result["mcp"]["url"] == "https://example.com/api"
 
 
 def test_config_diff_from_config():

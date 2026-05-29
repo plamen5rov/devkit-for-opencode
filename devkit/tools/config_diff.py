@@ -57,6 +57,7 @@ class ConfigDiff:
     total_changes: int = 0
     from_config: dict[str, Any] = field(default_factory=dict)
     to_config: dict[str, Any] = field(default_factory=dict)
+    parse_errors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -69,6 +70,7 @@ class ConfigDiff:
             "total_changes": self.total_changes,
             "from_config": self.from_config,
             "to_config": self.to_config,
+            "parse_errors": self.parse_errors,
         }
 
     def to_markdown(self) -> str:
@@ -77,7 +79,19 @@ class ConfigDiff:
             "",
             f"**From:** `{self.from_label}`",
             f"**To:** `{self.to_label}`",
-            f"",
+            "",
+        ]
+
+        if self.parse_errors:
+            lines.extend([
+                "## Parse Errors",
+                "",
+            ])
+            for err in self.parse_errors:
+                lines.append(f"- {err}")
+            lines.append("")
+
+        lines.extend([
             f"| Type | Count |",
             f"|------|-------|",
             f"| Added | {self.added_count} |",
@@ -85,7 +99,7 @@ class ConfigDiff:
             f"| Changed | {self.changed_count} |",
             f"| **Total** | **{self.total_changes}** |",
             "",
-        ]
+        ])
 
         sections = _group_by_section(self.entries)
         for section_name, entries in sections.items():
@@ -188,15 +202,24 @@ def diff_config_strings(
     Returns:
         ConfigDiff with all differences.
     """
-    from_config = _parse_jsonc(from_json)
-    to_config = _parse_jsonc(to_json)
+    from_config, from_err = _parse_jsonc(from_json)
+    to_config, to_err = _parse_jsonc(to_json)
 
-    return diff_configs(
+    result = diff_configs(
         from_config=from_config,
         to_config=to_config,
         from_label=from_label,
         to_label=to_label,
     )
+
+    parse_errors = []
+    if from_err:
+        parse_errors.append(f"[from] {from_err}")
+    if to_err:
+        parse_errors.append(f"[to] {to_err}")
+    result.parse_errors = parse_errors
+
+    return result
 
 
 def diff_config_against_history(
@@ -235,14 +258,16 @@ def diff_config_against_history(
     if not from_config:
         from_config = _extract_config_from_report(raw)
 
-    current_config = _parse_jsonc(config_json)
-
-    return diff_configs(
+    current_config, err = _parse_jsonc(config_json)
+    result = diff_configs(
         from_config=from_config,
         to_config=current_config,
         from_label=f"record #{record_id} ({record.timestamp[:10]})",
         to_label="current",
     )
+    if err:
+        result.parse_errors.append(f"[to] {err}")
+    return result
 
 
 def _deep_diff(
@@ -332,8 +357,13 @@ def _group_by_section(entries: list[DiffEntry]) -> dict[str, list[DiffEntry]]:
     return dict(sorted(groups.items(), key=lambda x: order.get(x[0], 99)))
 
 
-def _parse_jsonc(raw: str) -> dict[str, Any]:
-    """Parse a JSON/JSONC string into a dict."""
+def _parse_jsonc(raw: str) -> tuple[dict[str, Any], Optional[str]]:
+    """Parse a JSON/JSONC string into a dict.
+
+    Returns:
+        Tuple of (parsed_config, error_message_or_None).
+        On parse failure, returns ({}, error_message).
+    """
     import re
     raw = re.sub(r"/\*.*?\*/", "", raw, flags=re.DOTALL)
     lines = raw.split("\n")
@@ -343,13 +373,14 @@ def _parse_jsonc(raw: str) -> dict[str, Any]:
         if stripped.startswith("//"):
             continue
         if "//" in line:
-            line = line[:line.index("//")]
+            line = re.sub(r"(?<!:)//.*$", "", line)
         cleaned.append(line)
     raw = "\n".join(cleaned)
+    raw = re.sub(r",\s*([}\]])", r"\1", raw)
     try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        return {}
+        return json.loads(raw), None
+    except json.JSONDecodeError as e:
+        return {}, f"JSON parse error: {e}"
 
 
 def _extract_config_from_report(raw_report: dict[str, Any]) -> dict[str, Any]:

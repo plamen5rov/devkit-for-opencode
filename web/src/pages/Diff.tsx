@@ -12,7 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { GitCompare, Loader2, Upload, Info, ArrowRightLeft } from 'lucide-react'
+import { GitCompare, Loader2, Upload, Info, ArrowRightLeft,
+  AlertTriangle,
+} from 'lucide-react'
 import CodeMirror from '@uiw/react-codemirror'
 import { json } from '@codemirror/lang-json'
 import { vscodeDark } from '@uiw/codemirror-theme-vscode'
@@ -253,6 +255,23 @@ export function DiffPage() {
 
       {result && (
         <div ref={resultsRef} className="space-y-6">
+          {result.parse_errors && result.parse_errors.length > 0 && (
+            <Card className="border-red-800 bg-red-950/30">
+              <CardContent className="flex flex-col gap-2 py-4">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                  <span className="font-semibold text-red-300">Parse Error</span>
+                </div>
+                {result.parse_errors.map((err, i) => (
+                  <p key={i} className="text-sm text-red-200/80 font-mono">{err}</p>
+                ))}
+                <p className="text-xs text-red-300/60">
+                  Common JSONC issues: trailing commas, missing quotes, or unescaped characters.
+                  Fix the config and re-run the comparison.
+                </p>
+              </CardContent>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
