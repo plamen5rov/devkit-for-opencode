@@ -78,6 +78,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     diff_parser.add_argument("--format", dest="output_format", choices=["json", "markdown"], default="markdown")
     diff_parser.add_argument("--verbose", action="store_true")
 
+    graph_parser = subparsers.add_parser("graph", help="Build dependency graph from config")
+    graph_parser.add_argument("--config-path", type=str, default=None, help="Path to opencode.json")
+    graph_parser.add_argument("--output", dest="output_file", type=str, default=None, help="Write graph JSON to file")
+    graph_parser.add_argument("--verbose", action="store_true")
+
     return parser.parse_args(argv)
 
 
@@ -306,6 +311,35 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_graph(args: argparse.Namespace) -> int:
+    """Build dependency graph from config."""
+    from devkit.tools.config_reader import read_config
+    from devkit.tools.graph_builder import build_config_graph
+
+    config_path = Path(args.config_path) if args.config_path else detect_config()
+    if not config_path or not config_path.exists():
+        print("No OpenCode config found. Specify --config-path.")
+        return 1
+
+    result = read_config(config_path)
+    if not result.success:
+        print(f"Failed to read config: {'; '.join(result.errors)}")
+        return 1
+
+    graph = build_config_graph(result.config)
+    output = {"graph": graph.to_dict()}
+
+    if args.output_file:
+        with open(args.output_file, "w") as f:
+            json.dump(output, f, indent=2)
+        print(f"Graph written to {args.output_file}")
+        print(f"  Nodes: {len(graph.nodes)}  Edges: {len(graph.edges)}")
+    else:
+        print(json.dumps(output, indent=2))
+
+    return 0
+
+
 def main() -> int:
     load_dotenv()
 
@@ -320,6 +354,7 @@ def main() -> int:
         print("  history    View analysis history")
         print("  migrate    Migration assistant")
         print("  diff       Compare two configs")
+        print("  graph      Build dependency graph")
         print("\nRun 'devkit <command> --help' for more information.")
         return 0
 
@@ -330,6 +365,7 @@ def main() -> int:
         "history": cmd_history,
         "migrate": cmd_migrate,
         "diff": cmd_diff,
+        "graph": cmd_graph,
     }
 
     handler = handlers.get(args.command)

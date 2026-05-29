@@ -101,3 +101,9 @@ class DiffCompareRequest(BaseModel):
     config_content: Optional[str] = None
     record_id: int
     db_path: Optional[str] = None
+
+
+class GraphRequest(BaseModel):
+    config_content: Optional[str] = None
+    config_path: Optional[str] = None
+    label: Optional[str] = None

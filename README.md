@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests: 343 passing](https://img.shields.io/badge/tests-337%20passing-brightgreen.svg)]()
+[![Tests: 363 passing](https://img.shields.io/badge/tests-363%20passing-brightgreen.svg)]()
 
 ## Overview
 
@@ -163,6 +163,23 @@ devkit diff --from ~/.config/opencode/opencode.json --to examples/good-config.js
 devkit diff --from config-v1.json --to config-v2.json --format json
 ```
 
+### `devkit graph`
+
+Build a dependency graph from an OpenCode config, showing relationships between models, agents, MCP servers, permissions, plugins, and instructions.
+
+```bash
+# Generate a graph from your config (JSON to stdout)
+devkit graph --config-path ~/.config/opencode/opencode.json
+
+# Write graph to a file
+devkit graph --output graph.json
+
+# Pipe to jq for inspection
+devkit graph | jq '.graph.nodes[].type'
+
+# Web UI: live interactive graph at /graph
+```
+
 ### Common Flags
 
 | Flag | Applies To | Description |
@@ -249,7 +266,7 @@ devkit-for-opencode/
 │   ├── memory/          # SQLite-backed history store and recommendation tracker
 │   ├── output/          # Report generator (JSON, Markdown, HTML)
 │   ├── tasks/           # Workflow tasks (audit, security, token, migration)
-│   ├── tools/           # Core analyzer tools (6 total)
+│   ├── tools/           # Core analyzer tools (8 total)
 │   └── __init__.py
 ├── api/                 # FastAPI backend with 7 route groups
 ├── web/                 # React + Vite + TypeScript + Tailwind frontend
@@ -352,7 +369,7 @@ devkit audit --format markdown
 | 4. Tasks & Workflows | ✅ Done | 4 workflow tasks with 59 tests |
 | 5. OpenCode Tools | ✅ Done | 3 TypeScript tools |
 | 6. Memory & Persistence | ✅ Done | SQLite history + recommendation tracker (26 tests) |
-| 7. CLI & UI | ✅ Done | CLI with 6 commands + FastAPI + React web UI (8 pages, 42 tests) |
+| 7. CLI & UI | ✅ Done | CLI with 7 commands + FastAPI + React web UI (9 pages, 42 tests) |
 | 8. Documentation | 🚧 In Progress | README, examples, AGENTS.md update |
 | 9. Advanced Features | ✅ Done | Multi-agent orchestration, auto-remediation, plugin system |
 

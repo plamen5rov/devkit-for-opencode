@@ -14,6 +14,7 @@ import {
   GitCompare,
   ArrowLeftRight,
   Lightbulb,
+  Network,
   Play,
   Trash2,
 } from 'lucide-react'
@@ -26,6 +27,7 @@ const navItems = [
   { to: '/history', label: 'History', icon: Clock },
   { to: '/migrate', label: 'Migration', icon: GitCompare },
   { to: '/diff', label: 'Diff', icon: ArrowLeftRight },
+  { to: '/graph', label: 'Graph', icon: Network },
   { to: '/recommendations', label: 'Recommendations', icon: Lightbulb },
 ]
 

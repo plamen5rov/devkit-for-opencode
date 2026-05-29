@@ -8,6 +8,7 @@ import { HistoryPage } from './pages/History'
 import { MigratePage } from './pages/Migrate'
 import { RecommendationsPage } from './pages/Recommendations'
 import { DiffPage } from './pages/Diff'
+import { GraphPage } from './pages/Graph'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/migrate" element={<MigratePage />} />
         <Route path="/diff" element={<DiffPage />} />
+        <Route path="/graph" element={<GraphPage />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
       </Routes>
     </Layout>

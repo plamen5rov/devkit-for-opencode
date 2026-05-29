@@ -2,6 +2,21 @@
 
 ## Fixes & Improvements
 
+- [2026-05-29] feat: add Dependency Graph Visualization — interactive force-directed graph of config relationships (files modified: devkit/tools/graph_builder.py (new), api/routes/graph.py (new), api/schemas.py, api/main.py, devkit/cli.py, web/src/pages/Graph.tsx (new), web/src/lib/api.ts, web/src/App.tsx, web/src/components/Layout.tsx, tests/test_graph_builder.py (new), README.md, DONE.md, web/package.json (vis-network dep))
+  - `devkit/tools/graph_builder.py` — extracts nodes (config, model, agent, mcp, plugin, permission, instruction) and edges (uses_model, has_permission, connects_to, loads_plugin, includes, peer) from parsed config
+  - `devkit graph --config-path PATH` — CLI command with JSON output and `--output` file option
+  - `POST /api/graph` — API endpoint returning `{nodes, edges}` for vis-network rendering
+  - Web UI Graph page with CodeMirror input, force-directed vis-network renderer (forceAtlas2Based physics), stats bar, legend table, and edge summary table
+  - Demo config pre-loaded so users can see the graph without pasting anything
+  - 20 new tests pass; full suite at 363 tests (+20)
+
+- [2026-05-29] fix: Config Diff now handles JSONC trailing commas and surfaces parse errors (files modified: devkit/tools/config_diff.py, tests/test_config_diff.py)
+  - `_parse_jsonc` now strips trailing commas before parsing (common JSONC pattern)
+  - Returns parse errors instead of silently falling back to empty dicts
+  - Web UI shows red error card when config fails to parse
+  - Safe URL handling: `//` in `https://` URLs no longer stripped
+  - 6 new tests (53 total for diff, 343 overall)
+
 - [2026-05-29] feat: add Config Diff feature — compare two OpenCode configs (files modified: devkit/tools/config_diff.py (new), api/routes/diff.py (new), api/schemas.py, api/main.py, devkit/cli.py, web/src/pages/Diff.tsx (new), web/src/lib/api.ts, web/src/App.tsx, web/src/components/Layout.tsx, tests/test_config_diff.py (new), README.md, DONE.md)
   - `devkit/tools/config_diff.py` — deep recursive JSON diff engine with section-grouped output
   - `devkit diff --from PATH --to PATH` — CLI command with JSON and Markdown output

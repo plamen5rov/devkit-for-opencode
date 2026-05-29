@@ -101,14 +101,33 @@ export interface DiffEntry {
 export interface DiffResult {
   from_label: string
   to_label: string
-  entries: DiffEntry[]
+  total_changes: number
   added_count: number
   removed_count: number
   changed_count: number
-  total_changes: number
-  from_config: Record<string, any>
-  to_config: Record<string, any>
   parse_errors: string[]
+  entries: DiffEntry[]
+}
+
+export interface GraphNode {
+  id: string
+  label: string
+  type: string
+  group: string
+  color: string
+  extra?: Record<string, unknown>
+}
+
+export interface GraphEdge {
+  from: string
+  to: string
+  label: string
+  type: string
+}
+
+export interface GraphResult {
+  nodes: GraphNode[]
+  edges: GraphEdge[]
 }
 
 export const analyzeConfig = (configContent: string) =>
@@ -165,5 +184,8 @@ export const runDiffCompare = (configContent: string | null, recordId: number, c
     record_id: recordId,
     db_path: dbPath,
   })
+
+export const getGraph = (configContent: string, configPath?: string, label?: string) =>
+  api.post<GraphResult>('/graph', { config_content: configContent, config_path: configPath, label })
 
 export default api
