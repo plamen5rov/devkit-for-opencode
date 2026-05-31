@@ -187,7 +187,7 @@ def create_full_audit_task(
         report.raw_analyses["agents"] = analyze_agents(config).to_dict()
         report.raw_analyses["skills"] = analyze_skills(project_root, config).to_dict()
         report.raw_analyses["mcp_servers"] = analyze_mcp_servers(config).to_dict()
-        report.raw_analyses["commands"] = analyze_commands(project_root).to_dict()
+        report.raw_analyses["commands"] = analyze_commands(project_root, config).to_dict()
 
     # Generate markdown report
     report.to_markdown()

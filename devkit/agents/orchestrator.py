@@ -97,7 +97,7 @@ def run_orchestration(
     result.issues.extend(mcp_result.issues)
     result.warnings.extend(mcp_result.warnings)
 
-    cmd_result = analyze_commands(project_root)
+    cmd_result = analyze_commands(project_root, config)
     result.commands = cmd_result.to_dict()
     result.issues.extend(cmd_result.issues)
     result.warnings.extend(cmd_result.warnings)

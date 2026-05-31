@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from devkit.tools.skill_analyzer import (
+    _extract_skills_from_config,
     analyze_skills,
     parse_frontmatter,
     validate_skill_description,
@@ -219,3 +220,97 @@ def test_to_dict_serialization(valid_skill_dir: Path) -> None:
     assert d["total_skills"] >= 1  # At least our test skill
     assert d["valid_skills"] >= 1
     assert "git-release" in d["skills"]
+
+
+def test_extract_skills_from_config_global() -> None:
+    """Test extracting skill names from global permission rules."""
+    config = {
+        "permission": {
+            "skill": {
+                "chrome-devtools": "allow",
+                "markdown-lint": "allow",
+                "*": "ask",
+            },
+        },
+    }
+    names = _extract_skills_from_config(config)
+    assert sorted(names) == ["chrome-devtools", "markdown-lint"]
+
+
+def test_extract_skills_from_config_agent() -> None:
+    """Test extracting skill names from agent-specific permission rules."""
+    config = {
+        "agent": {
+            "planner": {
+                "permission": {
+                    "skill": {
+                        "chrome-devtools": "allow",
+                        "readme-guide": "ask",
+                    },
+                },
+            },
+        },
+    }
+    names = _extract_skills_from_config(config)
+    assert sorted(names) == ["chrome-devtools", "readme-guide"]
+
+
+def test_extract_skills_from_config_both() -> None:
+    """Test extracting skill names from both global and agent rules."""
+    config = {
+        "permission": {
+            "skill": {
+                "global-skill": "allow",
+                "shared-skill": "allow",
+            },
+        },
+        "agent": {
+            "worker": {
+                "permission": {
+                    "skill": {
+                        "agent-skill": "allow",
+                        "shared-skill": "allow",
+                    },
+                },
+            },
+        },
+    }
+    names = _extract_skills_from_config(config)
+    assert sorted(names) == ["agent-skill", "global-skill", "shared-skill"]
+
+
+def test_extract_skills_from_config_empty() -> None:
+    """Test extracting skill names when config has no skill permissions."""
+    config = {"model": "test/model", "permission": {"bash": "allow"}}
+    names = _extract_skills_from_config(config)
+    assert names == []
+
+
+def test_analyze_skills_falls_back_to_config() -> None:
+    """Test skills analysis returns skills from config when no filesystem skills found."""
+    config = {
+        "permission": {
+            "skill": {
+                "my-custom-skill": "allow",
+            },
+        },
+    }
+    result = analyze_skills(None, config)
+    assert "my-custom-skill" in result.skills
+    assert result.skills["my-custom-skill"].description == "Referenced in config permission rules"
+    assert result.skills["my-custom-skill"].path == "(from config)"
+    assert result.to_dict()["total_skills"] >= 1
+
+
+def test_analyze_skills_no_config_fallback_when_filesystem_has_skills(valid_skill_dir: Path) -> None:
+    """Test config fallback does not apply when filesystem skills exist."""
+    config = {
+        "permission": {
+            "skill": {
+                "extra-skill": "allow",
+            },
+        },
+    }
+    result = analyze_skills(valid_skill_dir, config)
+    assert "git-release" in result.skills
+    assert "extra-skill" not in result.skills

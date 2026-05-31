@@ -88,24 +88,24 @@ def discover_commands(project_root: Optional[Path] = None) -> list[tuple[Path, s
     Returns:
         List of (path_to_command.md, command_name) tuples.
     """
-    found = []
-    root = project_root or Path.cwd()
+    found: list[tuple[Path, str]] = []
 
-    # Search project-local paths
-    for rel_path in COMMAND_PATHS:
-        commands_dir = root / rel_path
-        if commands_dir.exists() and commands_dir.is_dir():
-            for cmd_file in commands_dir.glob("*.md"):
-                name = cmd_file.stem
-                found.append((cmd_file, name))
+    # Search project-local paths (only if project_root is provided)
+    if project_root is not None:
+        for rel_path in COMMAND_PATHS:
+            commands_dir = project_root / rel_path
+            if commands_dir.exists() and commands_dir.is_dir():
+                for cmd_file in commands_dir.glob("*.md"):
+                    name = cmd_file.stem
+                    found.append((cmd_file, name))
 
-    # Search global paths
-    for rel_path in GLOBAL_COMMAND_PATHS:
-        commands_dir = Path(os.path.expanduser(rel_path))
-        if commands_dir.exists() and commands_dir.is_dir():
-            for cmd_file in commands_dir.glob("*.md"):
-                name = cmd_file.stem
-                found.append((cmd_file, name))
+        # Search global paths (only alongside project-level scanning)
+        for rel_path in GLOBAL_COMMAND_PATHS:
+            commands_dir = Path(os.path.expanduser(rel_path))
+            if commands_dir.exists() and commands_dir.is_dir():
+                for cmd_file in commands_dir.glob("*.md"):
+                    name = cmd_file.stem
+                    found.append((cmd_file, name))
 
     return found
 
@@ -149,11 +149,13 @@ def extract_file_references(template: str) -> list[str]:
 
 def analyze_commands(
     project_root: Optional[Path] = None,
+    config: Optional[dict[str, Any]] = None,
 ) -> CommandAnalysisResult:
     """Discover and analyze all custom commands.
 
     Args:
         project_root: Project root directory for local command discovery.
+        config: Optional OpenCode config for config-based command extraction.
 
     Returns:
         CommandAnalysisResult with discovered commands and validation results.
@@ -163,6 +165,30 @@ def analyze_commands(
     # Discover commands
     command_files = discover_commands(project_root)
     result.search_paths = [str(p) for p, _ in command_files]
+
+    # If no filesystem commands found and config is provided, extract from config
+    if not command_files and config:
+        commands_config = config.get("command", {})
+        if isinstance(commands_config, dict):
+            for name, cmd_config in commands_config.items():
+                if isinstance(cmd_config, dict):
+                    desc = cmd_config.get("description", "")
+                else:
+                    desc = ""
+                info = CommandInfo(
+                    name=name,
+                    description=desc,
+                    path="(from config)",
+                    template="",
+                    agent=cmd_config.get("agent") if isinstance(cmd_config, dict) else None,
+                    model=cmd_config.get("model") if isinstance(cmd_config, dict) else None,
+                    subtask=bool(cmd_config.get("subtask", False)) if isinstance(cmd_config, dict) else False,
+                )
+                if not info.description:
+                    info.warnings.append("No description — commands should have a clear purpose")
+                result.commands[name] = info
+                result.warnings.extend(info.warnings)
+        return result
 
     for file_path, name in command_files:
         frontmatter, template = parse_command_file(file_path)

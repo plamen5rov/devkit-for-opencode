@@ -244,3 +244,53 @@ def test_to_dict_serialization(valid_command_dir: Path) -> None:
     assert "total_commands" in d
     assert "test" in d["commands"]
     assert d["total_commands"] >= 1
+
+
+def test_analyze_commands_falls_back_to_config() -> None:
+    """Test commands analysis returns commands from config when no filesystem commands found."""
+    config = {
+        "command": {
+            "my-task": {
+                "description": "Run a custom task",
+            },
+            "deploy": {
+                "description": "Deploy the application",
+                "agent": "build",
+                "model": "openai/gpt-4o",
+                "subtask": True,
+            },
+        },
+    }
+    result = analyze_commands(None, config)
+    assert "my-task" in result.commands
+    assert result.commands["my-task"].description == "Run a custom task"
+    assert result.commands["my-task"].path == "(from config)"
+    assert "deploy" in result.commands
+    assert result.commands["deploy"].agent == "build"
+    assert result.commands["deploy"].model == "openai/gpt-4o"
+    assert result.commands["deploy"].subtask is True
+    assert result.to_dict()["total_commands"] >= 2
+
+
+def test_analyze_commands_config_no_description_warning() -> None:
+    """Test commands from config get warning when description is missing."""
+    config = {
+        "command": {
+            "no-desc": {},
+        },
+    }
+    result = analyze_commands(None, config)
+    assert "no-desc" in result.commands
+    assert any("No description" in w for w in result.commands["no-desc"].warnings)
+
+
+def test_analyze_commands_no_config_fallback_when_filesystem_has_commands(valid_command_dir: Path) -> None:
+    """Test config fallback does not apply when filesystem commands exist."""
+    config = {
+        "command": {
+            "extra-cmd": {"description": "Extra command"},
+        },
+    }
+    result = analyze_commands(valid_command_dir, config)
+    assert "test" in result.commands
+    assert "extra-cmd" not in result.commands

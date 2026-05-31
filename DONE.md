@@ -2,6 +2,13 @@
 
 ## Fixes & Improvements
 
+- [2026-05-31] fix: skills and commands analysis now derived from config content when no filesystem access — no server-side scanning (files modified: devkit/tools/skill_analyzer.py, devkit/tools/command_analyzer.py, devkit/agents/orchestrator.py, devkit/tasks/full_audit.py, devkit/cli.py, tests/test_skill_analyzer.py, tests/test_command_analyzer.py, README.md, DONE.md)
+  - `discover_skills` / `discover_commands` no longer fall back to `Path.cwd()` when `project_root` is `None` — global paths also skipped
+  - `analyze_skills` extracts skill names from `config["permission"]["skill"]` when no filesystem skills found
+  - `analyze_commands` extracts commands from `config["command"]` when no filesystem commands found (new `config` param)
+  - CLI now derives `project_root` from config path to preserve filesystem scanning for local users
+  - 9 new tests (372 total)
+
 - [2026-05-29] feat: add Dependency Graph Visualization — interactive force-directed graph of config relationships (files modified: devkit/tools/graph_builder.py (new), api/routes/graph.py (new), api/schemas.py, api/main.py, devkit/cli.py, web/src/pages/Graph.tsx (new), web/src/lib/api.ts, web/src/App.tsx, web/src/components/Layout.tsx, tests/test_graph_builder.py (new), README.md, DONE.md, web/package.json (vis-network dep))
   - `devkit/tools/graph_builder.py` — extracts nodes (config, model, agent, mcp, plugin, permission, instruction) and edges (uses_model, has_permission, connects_to, loads_plugin, includes, peer) from parsed config
   - `devkit graph --config-path PATH` — CLI command with JSON output and `--output` file option

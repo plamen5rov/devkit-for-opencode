@@ -128,7 +128,8 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         print("No OpenCode config found. Specify --config-path or place opencode.json in .opencode/")
         return 1
 
-    report = create_full_audit_task(str(config_path))
+    project_root = config_path.parent.parent if "/.opencode/" in str(config_path) else config_path.parent
+    report = create_full_audit_task(str(config_path), project_root)
 
     if args.output_format == "json":
         print(json.dumps(report.to_dict(), indent=2, default=str))
@@ -181,7 +182,8 @@ def cmd_score(args: argparse.Namespace) -> int:
         print("No OpenCode config found. Specify --config-path or place opencode.json in .opencode/")
         return 1
 
-    result = run_orchestration(str(config_path))
+    project_root = config_path.parent.parent if "/.opencode/" in str(config_path) else config_path.parent
+    result = run_orchestration(str(config_path), project_root)
     score = result.summary.get("health_score", 0)
 
     if args.output_format == "json":

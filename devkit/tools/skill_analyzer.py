@@ -92,26 +92,26 @@ def discover_skills(project_root: Optional[Path] = None) -> list[tuple[Path, str
     Returns:
         List of (path_to_SKILL.md, skill_name) tuples.
     """
-    found = []
-    root = project_root or Path.cwd()
+    found: list[tuple[Path, str]] = []
 
-    # Search project-local paths
-    for rel_path in SKILL_PATHS:
-        skills_dir = root / rel_path
-        if skills_dir.exists() and skills_dir.is_dir():
-            for skill_dir in skills_dir.iterdir():
-                skill_file = skill_dir / "SKILL.md"
-                if skill_file.is_file():
-                    found.append((skill_file, skill_dir.name))
+    # Search project-local paths (only if project_root is provided)
+    if project_root is not None:
+        for rel_path in SKILL_PATHS:
+            skills_dir = project_root / rel_path
+            if skills_dir.exists() and skills_dir.is_dir():
+                for skill_dir in skills_dir.iterdir():
+                    skill_file = skill_dir / "SKILL.md"
+                    if skill_file.is_file():
+                        found.append((skill_file, skill_dir.name))
 
-    # Search global paths
-    for rel_path in GLOBAL_SKILL_PATHS:
-        skills_dir = Path(os.path.expanduser(rel_path))
-        if skills_dir.exists() and skills_dir.is_dir():
-            for skill_dir in skills_dir.iterdir():
-                skill_file = skill_dir / "SKILL.md"
-                if skill_file.is_file():
-                    found.append((skill_file, skill_dir.name))
+        # Search global paths (only alongside project-level scanning)
+        for rel_path in GLOBAL_SKILL_PATHS:
+            skills_dir = Path(os.path.expanduser(rel_path))
+            if skills_dir.exists() and skills_dir.is_dir():
+                for skill_dir in skills_dir.iterdir():
+                    skill_file = skill_dir / "SKILL.md"
+                    if skill_file.is_file():
+                        found.append((skill_file, skill_dir.name))
 
     return found
 
@@ -187,6 +187,20 @@ def analyze_skills(
     skill_files = discover_skills(project_root)
     result.search_paths = [str(p) for p, _ in skill_files]
 
+    # If no filesystem skills found and config is provided, extract from config permissions
+    if not skill_files and config:
+        skill_names = _extract_skills_from_config(config)
+        for name in skill_names:
+            info = SkillInfo(
+                name=name,
+                description=f"Referenced in config permission rules",
+                path="(from config)",
+            )
+            if config:
+                info.permission_status = _resolve_skill_permissions(name, config)
+            result.skills[name] = info
+        return result
+
     # Track seen names for duplicate detection
     seen_names: dict[str, str] = {}  # name -> path
 
@@ -239,6 +253,32 @@ def analyze_skills(
                 skill.warnings.append(f"Denied for agent '{agent}'")
 
     return result
+
+
+def _extract_skills_from_config(config: dict[str, Any]) -> list[str]:
+    """Extract skill names referenced in config permission rules."""
+    names: list[str] = []
+
+    global_perms = config.get("permission", {})
+    if isinstance(global_perms, dict):
+        skill_rules = global_perms.get("skill")
+        if isinstance(skill_rules, dict):
+            for key in skill_rules:
+                if key != "*":
+                    names.append(key)
+
+    agents = config.get("agent", {})
+    for _agent_name, agent_config in agents.items():
+        if isinstance(agent_config, dict):
+            agent_perms = agent_config.get("permission", {})
+            if isinstance(agent_perms, dict):
+                skill_rules = agent_perms.get("skill")
+                if isinstance(skill_rules, dict):
+                    for key in skill_rules:
+                        if key != "*" and key not in names:
+                            names.append(key)
+
+    return names
 
 
 def _resolve_skill_permissions(
